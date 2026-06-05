@@ -86,20 +86,23 @@ const PROJECTS = [
 ];
  
 // ─────────────────────────────────────────────────────────────────────────────
-// CURSOR — thin crosshair, no blobs
+// CURSOR — dot + lagging ring, mix-blend-mode:difference (visible on any bg)
 // ─────────────────────────────────────────────────────────────────────────────
 function Cursor() {
-  const ref = useRef(null);
-  const pos = useRef({ x: -300, y: -300 });
-  const tgt = useRef({ x: -300, y: -300 });
-  const [type, setType] = useState("default"); // default | link | view
- 
+  const dotRef  = useRef(null);
+  const ringRef = useRef(null);
+  const dotPos  = useRef({ x: -300, y: -300 });
+  const ringPos = useRef({ x: -300, y: -300 });
+  const tgt     = useRef({ x: -300, y: -300 });
+  const curSize = useRef(26);
+  const typeRef = useRef("default");
+
   useEffect(() => {
     const mv = e => { tgt.current = { x: e.clientX, y: e.clientY }; };
     window.addEventListener("mousemove", mv);
- 
-    const enter = e => setType(e.currentTarget.dataset.cur);
-    const leave = () => setType("default");
+
+    const enter = e => { typeRef.current = e.currentTarget.dataset.cur; };
+    const leave = () => { typeRef.current = "default"; };
     const attach = () => {
       document.querySelectorAll("[data-cur]").forEach(el => {
         el.addEventListener("mouseenter", enter);
@@ -109,29 +112,53 @@ function Cursor() {
     attach();
     const mo = new MutationObserver(attach);
     mo.observe(document.body, { childList: true, subtree: true });
- 
+
     let raf;
     const loop = () => {
-      pos.current.x += (tgt.current.x - pos.current.x) * 0.12;
-      pos.current.y += (tgt.current.y - pos.current.y) * 0.12;
-      if (ref.current) ref.current.style.transform = `translate(${pos.current.x}px,${pos.current.y}px)`;
+      const targetSize = typeRef.current === "view" ? 72 : typeRef.current === "link" ? 44 : 26;
+
+      // dot — snappy
+      dotPos.current.x += (tgt.current.x - dotPos.current.x) * 0.5;
+      dotPos.current.y += (tgt.current.y - dotPos.current.y) * 0.5;
+      // ring — silky lag
+      ringPos.current.x += (tgt.current.x - ringPos.current.x) * 0.09;
+      ringPos.current.y += (tgt.current.y - ringPos.current.y) * 0.09;
+      // size — smooth morph
+      curSize.current += (targetSize - curSize.current) * 0.11;
+
+      const s = curSize.current;
+
+      if (dotRef.current) {
+        dotRef.current.style.transform = `translate(${dotPos.current.x - 2.5}px,${dotPos.current.y - 2.5}px)`;
+      }
+      if (ringRef.current) {
+        ringRef.current.style.width     = `${s}px`;
+        ringRef.current.style.height    = `${s}px`;
+        ringRef.current.style.transform = `translate(${ringPos.current.x - s * 0.5}px,${ringPos.current.y - s * 0.5}px)`;
+      }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => { window.removeEventListener("mousemove", mv); cancelAnimationFrame(raf); mo.disconnect(); };
   }, []);
- 
-  const arm = type === "view" ? 18 : type === "link" ? 12 : 9;
+
   return (
-    <div ref={ref} style={{ position: "fixed", top: 0, left: 0, pointerEvents: "none", zIndex: 9999, willChange: "transform" }}>
-      <div style={{ position: "absolute", top: -0.5, left: -arm, width: arm * 2, height: 1, background: "#0a0a0a", transition: "all .2s cubic-bezier(.16,1,.3,1)" }} />
-      <div style={{ position: "absolute", left: -0.5, top: -arm, width: 1, height: arm * 2, background: "#0a0a0a", transition: "all .2s cubic-bezier(.16,1,.3,1)" }} />
-      {type === "view" && (
-        <div style={{ position: "absolute", top: 14, left: 14, fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 8, letterSpacing: ".22em", textTransform: "uppercase", color: "#0a0a0a", whiteSpace: "nowrap" }}>
-          Open
-        </div>
-      )}
-    </div>
+    <>
+      {/* Solid dot — snaps to cursor */}
+      <div ref={dotRef} style={{
+        position: "fixed", top: 0, left: 0,
+        width: 5, height: 5, borderRadius: "50%",
+        background: "#fff", mixBlendMode: "difference",
+        pointerEvents: "none", zIndex: 9999, willChange: "transform",
+      }} />
+      {/* Ring — lags behind, morphs on hover */}
+      <div ref={ringRef} style={{
+        position: "fixed", top: 0, left: 0,
+        width: 26, height: 26, borderRadius: "50%",
+        border: "1px solid #fff", mixBlendMode: "difference",
+        pointerEvents: "none", zIndex: 9998, willChange: "transform",
+      }} />
+    </>
   );
 }
  

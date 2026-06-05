@@ -252,7 +252,7 @@ export default function ProjectPage({ project, onBack, onNext, onPrev, totalProj
           }
         });
       },
-      { threshold: 0.5, root: null }
+      { threshold: 0.1, rootMargin: "0px 0px -30% 0px" }
     );
     imgRefs.current.forEach(el => el && obs.observe(el));
     return () => obs.disconnect();
@@ -402,7 +402,7 @@ export default function ProjectPage({ project, onBack, onNext, onPrev, totalProj
         </div>
       </div>
 
-      {/* ── CENTER — scrollable images ── */}
+      {/* ── CENTER — mosaic grid ── */}
       <main style={{ marginLeft: RAIL, marginRight: RAIL, paddingTop: NAV_H }} ref={scrollRef}>
 
         {/* Header strip */}
@@ -410,7 +410,7 @@ export default function ProjectPage({ project, onBack, onNext, onPrev, totalProj
           height: 44,
           borderBottom: `1px solid ${BORDER}`,
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "0 36px", background: BG,
+          padding: "0 48px", background: BG,
         }}>
           <span style={{ ...lbl, color: MUTED }}>Project Detail</span>
           <span style={{ fontFamily: F_SERIF, fontStyle: "italic", fontSize: 12, color: MUTED }}>
@@ -418,10 +418,12 @@ export default function ProjectPage({ project, onBack, onNext, onPrev, totalProj
           </span>
         </div>
 
-        {/* Each image gets full viewport height — scroll through them */}
-        {images.map((src, i) => (
-          <ProjectImage key={i} src={src} idx={i} imgRef={el => imgRefs.current[i] = el} total={images.length} />
-        ))}
+        {/* Mosaic grid — 2 columns, natural aspect ratios */}
+        <div style={{ padding: "40px 48px 56px", columns: 2, columnGap: 16 }}>
+          {images.map((src, i) => (
+            <ProjectImage key={i} src={src} idx={i} imgRef={el => imgRefs.current[i] = el} total={images.length} />
+          ))}
+        </div>
 
         {/* ── NEXT PROJECT TEASER ── */}
         <div style={{ borderTop: `1px solid ${BORDER}`, background: BG }}>
@@ -467,13 +469,16 @@ export default function ProjectPage({ project, onBack, onNext, onPrev, totalProj
   );
 }
 
-// ── SINGLE IMAGE BLOCK ────────────────────────────────────────────────────────
-function ProjectImage({ src, idx, imgRef, total }) {
+// ── MOSAIC TILE ───────────────────────────────────────────────────────────────
+function ProjectImage({ src, idx, imgRef }) {
   const [vis, setVis] = useState(false);
   const ref = useRef(null);
 
   useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVis(true); }, { threshold: 0.08 });
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) setVis(true); },
+      { threshold: 0.05 }
+    );
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
@@ -485,33 +490,20 @@ function ProjectImage({ src, idx, imgRef, total }) {
       ref={setRefs}
       data-idx={idx}
       style={{
-        height: "100vh",
-        position: "relative",
+        breakInside: "avoid",
+        marginBottom: 16,
         overflow: "hidden",
-        borderBottom: idx < total - 1 ? `1px solid ${BORDER}` : "none",
         opacity: vis ? 1 : 0,
-        transition: "opacity .8s ease",
-        background: "#e8e4de",
+        transform: vis ? "translateY(0)" : "translateY(10px)",
+        transition: `opacity .7s ease ${Math.min(idx * 0.04, 0.4)}s, transform .7s ease ${Math.min(idx * 0.04, 0.4)}s`,
       }}
     >
       <img
         src={src}
         alt={`View ${idx + 1}`}
-        style={{
-          width: "100%", height: "100%",
-          objectFit: "cover", display: "block",
-        }}
-        loading={idx === 0 ? "eager" : "lazy"}
+        style={{ width: "100%", height: "auto", display: "block" }}
+        loading={idx < 4 ? "eager" : "lazy"}
       />
-      {/* image index ghost */}
-      <div style={{
-        position: "absolute", bottom: 20, left: 28,
-        fontFamily: F_SERIF, fontStyle: "italic",
-        fontSize: 72, color: "rgba(17,17,17,.07)",
-        lineHeight: 1, pointerEvents: "none", userSelect: "none",
-      }}>
-        {String(idx + 1).padStart(2, "0")}
-      </div>
     </div>
   );
 }
