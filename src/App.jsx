@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import ProjectPage from "./ProjectPage";
 
 const F_SERIF = "'Helvetica', sans-serif";
 const F_SANS  = "'Inter', sans-serif";
@@ -210,8 +211,8 @@ function Chrome({ activeProject, isDark, onToggleDark }) {
         transition: "background .3s, border-color .3s",
       }}>
         <div style={{ borderRight: `1px solid ${isDark ? "rgba(228,228,228,.1)" : "rgba(10,10,10,.1)"}`, display: "flex", alignItems: "center", padding: "0 28px" }}>
-          <a href="#" data-cur="link" style={{ fontFamily: "'Helvetica',sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: ".06em", textTransform: "uppercase", color: isDark ? "#E4E4E4" : "#0a0a0a", textDecoration: "none", transition: "color .3s" }}>
-            KARA
+          <a href="#" data-cur="link" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
+            <img src={isDark ? "/images/logo/Logo-white.png" : "/images/logo/Logo-black.png"} alt="KARA" style={{ height: 22, display: "block" }} />
           </a>
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 56 }}>
@@ -619,8 +620,8 @@ function Contact({ isDark }) {
       </div>
  
       <div style={{ padding: "80px 52px 96px", position: "relative", zIndex: 2 }}>
-        <div style={{ position: "absolute", bottom: -40, right: 0, fontFamily: "'Helvetica',sans-serif", fontStyle: "normal", fontSize: "clamp(100px,18vw,220px)", color: isDark ? "rgba(228,228,228,.04)" : "rgba(10,10,10,.04)", lineHeight: 1, pointerEvents: "none", letterSpacing: "-.03em", transition: "color .3s" }}>
-          KARA
+        <div style={{ position: "absolute", bottom: -40, right: 0, lineHeight: 1, pointerEvents: "none" }}>
+          <img src={isDark ? "/images/logo/Logo-white.png" : "/images/logo/Logo-black.png"} alt="" style={{ height: "clamp(100px,18vw,220px)", opacity: isDark ? 0.04 : 0.04, display: "block" }} />
         </div>
 
         <h2 style={{ fontFamily: "'Helvetica',sans-serif", fontStyle: "normal", fontWeight: 700, fontSize: "clamp(48px,6.5vw,96px)", color: isDark ? "#E4E4E4" : "#0a0a0a", lineHeight: .96, letterSpacing: "-.03em", margin: "0 0 40px", maxWidth: 600, transition: "color .3s" }}>
@@ -665,7 +666,7 @@ function Contact({ isDark }) {
 function Footer({ isDark }) {
   return (
     <footer style={{ marginLeft: 220, marginRight: 220, background: isDark ? "#07070A" : "#0a0a0a", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 40px", borderTop: `1px solid ${isDark ? "rgba(228,228,228,.1)" : "rgba(255,255,255,.06)"}`, transition: "background .3s, border-color .3s" }}>
-      <div style={{ fontFamily: "'Helvetica',sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: ".1em", textTransform: "uppercase", color: isDark ? "rgba(228,228,228,.15)" : "rgba(255,255,255,.15)", transition: "color .3s" }}>KARA</div>
+      <div><img src="/images/logo/Logo-white.png" alt="KARA" style={{ height: 14, opacity: 0.2, display: "block" }} /></div>
       <div style={{ fontFamily: "'Inter',sans-serif", fontWeight: 300, fontSize: 9, letterSpacing: ".18em", textTransform: "uppercase", color: isDark ? "rgba(228,228,228,.15)" : "rgba(255,255,255,.15)", transition: "color .3s" }}>© 2026 Karan Sandhu — Dubai</div>
       <a href="https://madebykara.com" target="_blank" rel="noreferrer" data-cur="link"
         style={{ fontFamily: "'Inter',sans-serif", fontWeight: 300, fontSize: 9, letterSpacing: ".18em", textTransform: "uppercase", color: isDark ? "rgba(228,228,228,.15)" : "rgba(255,255,255,.15)", textDecoration: "none", transition: "color .2s" }}
@@ -765,13 +766,18 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState(0);
   const [lbIdx, setLbIdx] = useState(null);
+  const [projectPage, setProjectPage] = useState(null);
   const [isDark, setIsDark] = useState(false);
- 
+
   const open = useCallback(i => setLbIdx(i), []);
   const close = useCallback(() => setLbIdx(null), []);
   const prev = useCallback(() => setLbIdx(i => (i - 1 + PROJECTS.length) % PROJECTS.length), []);
   const next = useCallback(() => setLbIdx(i => (i + 1) % PROJECTS.length), []);
   const toggleDark = useCallback(() => setIsDark(v => !v), []);
+  const openProject  = useCallback(i  => { setProjectPage(i); window.scrollTo(0, 0); }, []);
+  const closeProject = useCallback(()  => setProjectPage(null), []);
+  const prevProject  = useCallback(()  => setProjectPage(i => (i - 1 + PROJECTS.length) % PROJECTS.length), []);
+  const nextProject  = useCallback(()  => setProjectPage(i => (i + 1) % PROJECTS.length), []);
  
   return (
     <div style={{ background: isDark ? "#07070A" : "#f0ede8", transition: "background .3s ease" }}>
@@ -794,18 +800,22 @@ export default function App() {
  
       {loading && <Loader onDone={() => setLoading(false)} isDark={isDark} />}
       <Cursor />
-      {!loading && <Chrome activeProject={active} isDark={isDark} onToggleDark={toggleDark} />}
+      {!loading && projectPage === null && <Chrome activeProject={active} isDark={isDark} onToggleDark={toggleDark} />}
       {lbIdx !== null && <Lightbox project={PROJECTS[lbIdx]} onClose={close} onPrev={prev} onNext={next} isDark={isDark} />}
- 
-      {!loading && (
-        <main style={{ paddingTop: 64 }}>
-          <Hero isDark={isDark} />
-          <WorkSection onActiveChange={setActive} onOpen={open} isDark={isDark} />
-          <Marquee isDark={isDark} />
-          <About isDark={isDark} />
-          <Contact isDark={isDark} />
-          <Footer isDark={isDark} />
-        </main>
+
+      {projectPage !== null ? (
+        <ProjectPage project={PROJECTS[projectPage]} onBack={closeProject} onPrev={prevProject} onNext={nextProject} totalProjects={PROJECTS.length} isDark={isDark} />
+      ) : (
+        !loading && (
+          <main style={{ paddingTop: 64 }}>
+            <Hero isDark={isDark} />
+            <WorkSection onActiveChange={setActive} onOpen={openProject} isDark={isDark} />
+            <Marquee isDark={isDark} />
+            <About isDark={isDark} />
+            <Contact isDark={isDark} />
+            <Footer isDark={isDark} />
+          </main>
+        )
       )}
     </div>
   );
