@@ -134,7 +134,7 @@ export default function ProjectPage({ project, onBack, onNext, onPrev, totalProj
             onMouseEnter={e => e.currentTarget.style.opacity = ".6"}
             onMouseLeave={e => e.currentTarget.style.opacity = "1"}
           >
-            ← <img src="/images/logo/Logo-black.png" alt="KARA" style={{ height: 14, display: "inline-block", verticalAlign: "middle" }} />
+            ← <img src="/images/logo/kara-black-logo.svg" alt="KARA" style={{ height: 14, display: "inline-block", verticalAlign: "middle" }} />
           </button>
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>

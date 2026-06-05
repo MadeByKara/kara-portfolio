@@ -212,7 +212,7 @@ function Chrome({ activeProject, isDark, onToggleDark }) {
       }}>
         <div style={{ borderRight: `1px solid ${isDark ? "rgba(228,228,228,.1)" : "rgba(10,10,10,.1)"}`, display: "flex", alignItems: "center", padding: "0 28px" }}>
           <a href="#" data-cur="link" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
-            <img src={isDark ? "/images/logo/Logo-white.png" : "/images/logo/Logo-black.png"} alt="KARA" style={{ height: 22, display: "block" }} />
+            <img src={isDark ? "/images/logo/kara-white-logo.svg" : "/images/logo/kara-black-logo.svg"} alt="KARA" style={{ height: 22, display: "block" }} />
           </a>
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 56 }}>
@@ -621,7 +621,7 @@ function Contact({ isDark }) {
  
       <div style={{ padding: "80px 52px 96px", position: "relative", zIndex: 2 }}>
         <div style={{ position: "absolute", bottom: -40, right: 0, lineHeight: 1, pointerEvents: "none" }}>
-          <img src={isDark ? "/images/logo/Logo-white.png" : "/images/logo/Logo-black.png"} alt="" style={{ height: "clamp(100px,18vw,220px)", opacity: isDark ? 0.04 : 0.04, display: "block" }} />
+          <img src={isDark ? "/images/logo/kara-white-logo.svg" : "/images/logo/kara-black-logo.svg"} alt="" style={{ height: "clamp(100px,18vw,220px)", opacity: isDark ? 0.04 : 0.04, display: "block" }} />
         </div>
 
         <h2 style={{ fontFamily: "'Helvetica',sans-serif", fontStyle: "normal", fontWeight: 700, fontSize: "clamp(48px,6.5vw,96px)", color: isDark ? "#E4E4E4" : "#0a0a0a", lineHeight: .96, letterSpacing: "-.03em", margin: "0 0 40px", maxWidth: 600, transition: "color .3s" }}>
@@ -666,7 +666,7 @@ function Contact({ isDark }) {
 function Footer({ isDark }) {
   return (
     <footer style={{ marginLeft: 220, marginRight: 220, background: isDark ? "#07070A" : "#0a0a0a", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 40px", borderTop: `1px solid ${isDark ? "rgba(228,228,228,.1)" : "rgba(255,255,255,.06)"}`, transition: "background .3s, border-color .3s" }}>
-      <div><img src="/images/logo/Logo-white.png" alt="KARA" style={{ height: 14, opacity: 0.2, display: "block" }} /></div>
+      <div><img src="/images/logo/kara-white-logo.svg" alt="KARA" style={{ height: 14, opacity: 0.2, display: "block" }} /></div>
       <div style={{ fontFamily: "'Inter',sans-serif", fontWeight: 300, fontSize: 9, letterSpacing: ".18em", textTransform: "uppercase", color: isDark ? "rgba(228,228,228,.15)" : "rgba(255,255,255,.15)", transition: "color .3s" }}>© 2026 Karan Sandhu — Dubai</div>
       <a href="https://madebykara.com" target="_blank" rel="noreferrer" data-cur="link"
         style={{ fontFamily: "'Inter',sans-serif", fontWeight: 300, fontSize: 9, letterSpacing: ".18em", textTransform: "uppercase", color: isDark ? "rgba(228,228,228,.15)" : "rgba(255,255,255,.15)", textDecoration: "none", transition: "color .2s" }}
