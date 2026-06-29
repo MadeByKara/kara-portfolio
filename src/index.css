@@ -1,2 +1,2 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { cursor: none; background: #ccc8c0; }
+body { background: #ccc8c0; }

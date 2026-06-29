@@ -287,7 +287,7 @@ export default function ProjectPage({ project, onBack, onNext, onPrev, totalProj
         <div style={{ borderRight: `1px solid ${BORDER}`, display: "flex", alignItems: "center", padding: "0 24px" }}>
           <button
             onClick={onBack}
-            style={{ fontFamily: F_SANS, fontWeight: 600, fontSize: 12, letterSpacing: ".08em", textTransform: "uppercase", color: INK, background: "none", border: "none", cursor: "none", padding: 0, display: "flex", alignItems: "center", gap: 8 }}
+            style={{ fontFamily: F_SANS, fontWeight: 600, fontSize: 12, letterSpacing: ".08em", textTransform: "uppercase", color: INK, background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", gap: 8 }}
             onMouseEnter={e => e.currentTarget.style.opacity = ".6"}
             onMouseLeave={e => e.currentTarget.style.opacity = "1"}
           >
@@ -300,8 +300,8 @@ export default function ProjectPage({ project, onBack, onNext, onPrev, totalProj
           </span>
         </div>
         <div style={{ borderLeft: `1px solid ${BORDER}`, display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 24px", gap: 20 }}>
-          <button onClick={onPrev} style={{ ...lbl, color: MUTED, background: "none", border: "none", cursor: "none", transition: "color .2s" }} onMouseEnter={e => e.currentTarget.style.color = INK} onMouseLeave={e => e.currentTarget.style.color = MUTED}>←</button>
-          <button onClick={onNext} style={{ ...lbl, color: MUTED, background: "none", border: "none", cursor: "none", transition: "color .2s" }} onMouseEnter={e => e.currentTarget.style.color = INK} onMouseLeave={e => e.currentTarget.style.color = MUTED}>→</button>
+          <button onClick={onPrev} style={{ ...lbl, color: MUTED, background: "none", border: "none", cursor: "pointer", transition: "color .2s" }} onMouseEnter={e => e.currentTarget.style.color = INK} onMouseLeave={e => e.currentTarget.style.color = MUTED}>←</button>
+          <button onClick={onNext} style={{ ...lbl, color: MUTED, background: "none", border: "none", cursor: "pointer", transition: "color .2s" }} onMouseEnter={e => e.currentTarget.style.color = INK} onMouseLeave={e => e.currentTarget.style.color = MUTED}>→</button>
         </div>
       </div>
 
@@ -438,7 +438,7 @@ export default function ProjectPage({ project, onBack, onNext, onPrev, totalProj
                 style={{
                   fontFamily: F_SERIF, fontStyle: "italic", fontWeight: 400,
                   fontSize: "clamp(28px,3.5vw,52px)", color: INK,
-                  background: "none", border: "none", cursor: "none", padding: 0,
+                  background: "none", border: "none", cursor: "pointer", padding: 0,
                   letterSpacing: "-.01em", lineHeight: 1, textAlign: "left",
                   transition: "opacity .2s",
                 }}
@@ -454,7 +454,7 @@ export default function ProjectPage({ project, onBack, onNext, onPrev, totalProj
                 fontFamily: F_SANS, fontWeight: 400, fontSize: 10,
                 letterSpacing: ".16em", textTransform: "uppercase",
                 color: MUTED, background: "none", border: `1px solid ${BORDER}`,
-                padding: "10px 20px", cursor: "none", transition: "all .2s",
+                padding: "10px 20px", cursor: "pointer", transition: "all .2s",
               }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = INK; e.currentTarget.style.color = INK; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = MUTED; }}

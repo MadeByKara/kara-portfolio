@@ -87,26 +87,23 @@ const stripFor = (id, cover) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CURSOR — dot + ring, mix-blend difference, lerp 0.12, VIEW/OPEN label
+// CURSOR LABEL — normal OS cursor stays; a pill beside it names the destination
+// (any element with data-label="…" triggers it)
 // ─────────────────────────────────────────────────────────────────────────────
-function Cursor() {
-  const dotRef  = useRef(null);
-  const ringRef = useRef(null);
-  const labelRef = useRef(null);
-  const dot  = useRef({ x: -100, y: -100 });
-  const ring = useRef({ x: -100, y: -100 });
-  const tgt  = useRef({ x: -100, y: -100 });
-  const size = useRef(8);
-  const typeRef = useRef("default");
+function CursorLabel() {
+  const boxRef = useRef(null);
+  const pos = useRef({ x: -200, y: -200 });
+  const tgt = useRef({ x: -200, y: -200 });
+  const label = useRef("");
 
   useEffect(() => {
     const mv = e => { tgt.current = { x: e.clientX, y: e.clientY }; };
     window.addEventListener("mousemove", mv);
 
-    const enter = e => { typeRef.current = e.currentTarget.dataset.cur || "link"; };
-    const leave = () => { typeRef.current = "default"; };
+    const enter = e => { label.current = e.currentTarget.dataset.label || ""; };
+    const leave = () => { label.current = ""; };
     const attach = () => {
-      document.querySelectorAll("a,button,[data-cur]").forEach(el => {
+      document.querySelectorAll("[data-label]").forEach(el => {
         el.removeEventListener("mouseenter", enter);
         el.removeEventListener("mouseleave", leave);
         el.addEventListener("mouseenter", enter);
@@ -119,30 +116,15 @@ function Cursor() {
 
     let raf;
     const loop = () => {
-      const t = typeRef.current;
-      const targetSize = t === "default" ? 8 : 40;
-
-      dot.current.x += (tgt.current.x - dot.current.x) * 0.35;
-      dot.current.y += (tgt.current.y - dot.current.y) * 0.35;
-      ring.current.x += (tgt.current.x - ring.current.x) * 0.12;
-      ring.current.y += (tgt.current.y - ring.current.y) * 0.12;
-      size.current += (targetSize - size.current) * 0.18;
-
-      const s = size.current;
-      if (dotRef.current) {
-        dotRef.current.style.transform = `translate(${dot.current.x - 4}px,${dot.current.y - 4}px)`;
-        dotRef.current.style.opacity = t === "default" ? "1" : "0";
-      }
-      if (ringRef.current) {
-        ringRef.current.style.width = `${s}px`;
-        ringRef.current.style.height = `${s}px`;
-        ringRef.current.style.transform = `translate(${ring.current.x - s / 2}px,${ring.current.y - s / 2}px)`;
-        ringRef.current.style.borderWidth = t === "default" ? "0px" : "1px";
-      }
-      if (labelRef.current) {
-        labelRef.current.style.transform = `translate(${ring.current.x}px,${ring.current.y}px) translate(-50%,-50%)`;
-        labelRef.current.style.opacity = t === "view" ? "1" : "0";
-        labelRef.current.textContent = "OPEN";
+      pos.current.x += (tgt.current.x - pos.current.x) * 0.22;
+      pos.current.y += (tgt.current.y - pos.current.y) * 0.22;
+      const box = boxRef.current;
+      if (box) {
+        const show = !!label.current;
+        box.style.transform = `translate(${pos.current.x + 18}px, ${pos.current.y + 16}px)`;
+        box.style.opacity = show ? "1" : "0";
+        box.style.scale = show ? "1" : "0.7";
+        if (show && box.textContent !== label.current) box.textContent = label.current;
       }
       raf = requestAnimationFrame(loop);
     };
@@ -150,13 +132,14 @@ function Cursor() {
     return () => { window.removeEventListener("mousemove", mv); cancelAnimationFrame(raf); mo.disconnect(); };
   }, []);
 
-  const base = { position: "fixed", top: 0, left: 0, pointerEvents: "none", zIndex: 100000, mixBlendMode: "difference" };
   return (
-    <>
-      <div ref={dotRef} style={{ ...base, width: 8, height: 8, borderRadius: "50%", background: "#fff", willChange: "transform" }} />
-      <div ref={ringRef} style={{ ...base, width: 8, height: 8, borderRadius: "50%", border: "1px solid #fff", willChange: "transform, width, height" }} />
-      <div ref={labelRef} style={{ ...base, color: "#fff", fontFamily: SANS, fontSize: 8, letterSpacing: ".2em", fontWeight: 500, opacity: 0, willChange: "transform" }} />
-    </>
+    <div ref={boxRef} aria-hidden style={{
+      position: "fixed", top: 0, left: 0, zIndex: 100000, pointerEvents: "none",
+      background: INK, color: PAPER, fontFamily: SANS, fontSize: 10, letterSpacing: ".1em",
+      textTransform: "uppercase", fontWeight: 500, padding: "7px 12px", borderRadius: 100,
+      whiteSpace: "nowrap", opacity: 0, transformOrigin: "top left", willChange: "transform, opacity",
+      transition: "opacity .2s ease, scale .2s ease",
+    }} />
   );
 }
 
@@ -182,14 +165,14 @@ function Nav({ ready, onOpenProject }) {
         padding: "0 28px", borderBottom: `1px solid ${BORDER}`,
         background: "rgba(204,200,192,0.8)", backdropFilter: "blur(10px)",
       }}>
-        <a href="#top" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+        <a href="#top" data-label="Home" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
           style={{ display: "flex", alignItems: "center", textDecoration: "none",
             opacity: ready ? 1 : 0, transform: ready ? "translateY(0)" : "translateY(8px)",
             transition: "opacity .6s ease, transform .6s ease" }}>
           <img src="/images/logo/kara-black-logo.svg" alt="KARA" style={{ height: 16, display: "block" }} />
         </a>
-        <button onClick={() => setMenu(true)}
-          style={{ background: "none", border: "none", cursor: "none", padding: 0,
+        <button onClick={() => setMenu(true)} data-label="Open menu"
+          style={{ background: "none", border: "none", cursor: "pointer", padding: 0,
             fontFamily: SANS, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: INK,
             display: "flex", alignItems: "center", gap: 9,
             opacity: ready ? 1 : 0, transform: ready ? "translateY(0)" : "translateY(8px)",
@@ -212,17 +195,17 @@ function Nav({ ready, onOpenProject }) {
       }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <img src="/images/logo/kara-white-logo.svg" alt="KARA" style={{ height: 16 }} />
-          <button onClick={() => setMenu(false)}
-            style={{ background: "none", border: "none", cursor: "none", color: "#e8e4de",
+          <button onClick={() => setMenu(false)} data-label="Close menu"
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#e8e4de",
               fontFamily: SANS, fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", display: "flex", alignItems: "center", gap: 9 }}>
             Close <span style={{ fontSize: 16, lineHeight: 1 }}>×</span>
           </button>
         </div>
 
         <nav style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          {[["Work", "#work"], ["About", "#about"], ["Contact", "#contact"]].map(([label, hash], i) => (
-            <button key={hash} onClick={() => go(hash)}
-              style={{ background: "none", border: "none", cursor: "none", textAlign: "left", padding: 0,
+          {[["Work", "#work"], ["About", "#about"], ["Services", "#services"], ["Contact", "#contact"]].map(([label, hash], i) => (
+            <button key={hash} onClick={() => go(hash)} data-label={`Go to ${label}`}
+              style={{ background: "none", border: "none", cursor: "pointer", textAlign: "left", padding: 0,
                 fontFamily: SERIF, fontStyle: "italic", fontWeight: 400, color: "#e8e4de",
                 fontSize: "clamp(56px,9vw,128px)", lineHeight: 1.02, letterSpacing: "-.02em",
                 opacity: menu ? 1 : 0, transform: menu ? "translateY(0)" : "translateY(40px)",
@@ -275,6 +258,12 @@ function Hero({ ready }) {
         fontFamily: SANS, fontSize: 11, letterSpacing: ".2em", textTransform: "uppercase", color: MUTED }}>
         Brand &amp; Creative Designer · Dubai
       </div>
+
+      {/* big logo top-right */}
+      <img src="/images/logo/kara-black-logo.svg" alt="KARA" aria-hidden
+        style={{ position: "absolute", top: 80, right: 28, width: "clamp(150px, 26vw, 400px)",
+          opacity: ready ? 1 : 0, transform: ready ? "translateY(0)" : "translateY(14px)",
+          transition: "opacity 1s ease .5s, transform 1s cubic-bezier(.16,1,.3,1) .5s", pointerEvents: "none" }} />
 
       {/* headline */}
       <div style={{ paddingBottom: 40 }}>
@@ -361,7 +350,7 @@ function FolderCard({ project, index, cardRef, onOpen }) {
       style={{ position: "sticky", top: `calc(116px + ${index * 2}px)`, paddingTop: 24 }}
     >
       <div
-        data-cur="view"
+        data-label={`View · ${project.title}`}
         onClick={onOpen}
         style={{
           background: PAPER, borderRadius: "6px 6px 0 0", overflow: "hidden",
@@ -370,7 +359,7 @@ function FolderCard({ project, index, cardRef, onOpen }) {
           transform: vis ? "translateY(0)" : "translateY(60px)",
           opacity: vis ? 1 : 0,
           transition: "transform .9s cubic-bezier(.16,1,.3,1), opacity .9s ease",
-          cursor: "none",
+          cursor: "pointer",
         }}>
         {/* TAB ROW */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -408,65 +397,91 @@ function FolderCard({ project, index, cardRef, onOpen }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SERVICES TREE
+// CAPABILITIES — cursor-activated hover list with a floating image preview
 // ─────────────────────────────────────────────────────────────────────────────
-const TREE = [
-  { id: "brand", label: "Brand Identity", children: ["Logo Design", "Visual Systems", "Brand Guidelines"] },
-  { id: "art", label: "Art Direction", children: ["Social Media Content", "Campaign Visuals", "Photography Direction"] },
-  { id: "digital", label: "Digital Design", children: ["Social Media Design", "Email Design", "Digital Ads"] },
-  { id: "print", label: "Print & Packaging", children: ["Label Design", "Company Profiles"] },
-  { id: "strategy", label: "Strategy", children: ["Brand Auditing", "Visual Consulting"] },
+const CAPS = [
+  { label: "Brand Identity",    detail: "Logos, visual systems & guidelines",   img: "/images/greenstone/Greenstone-100.jpg" },
+  { label: "Art Direction",     detail: "Campaigns, social & photography",      img: "/images/stygian-crypt/Mockup%201.jpg" },
+  { label: "Digital Design",    detail: "Social, email & digital advertising",  img: "/images/social%20media%20creatives/Thumbnail%20Website.jpg" },
+  { label: "Print & Packaging", detail: "Labels, profiles & editorial",         img: "/images/brand-craft/front.webp" },
+  { label: "Strategy",          detail: "Brand audits & visual consulting",     img: "/images/kara/Colours.png" },
 ];
 
-function ServicesTree() {
-  const [open, setOpen] = useState(() => new Set(["brand"]));
-  const toggle = (id) => setOpen(prev => {
-    const n = new Set(prev);
-    n.has(id) ? n.delete(id) : n.add(id);
-    return n;
-  });
+function Capabilities() {
+  const [active, setActive] = useState(null);
+  const imgWrap = useRef(null);
+  const pos = useRef({ x: -400, y: -400 });
+  const tgt = useRef({ x: -400, y: -400 });
+
+  useEffect(() => {
+    const mv = e => { tgt.current = { x: e.clientX, y: e.clientY }; };
+    window.addEventListener("mousemove", mv);
+    let raf;
+    const loop = () => {
+      pos.current.x += (tgt.current.x - pos.current.x) * 0.14;
+      pos.current.y += (tgt.current.y - pos.current.y) * 0.14;
+      if (imgWrap.current) imgWrap.current.style.transform =
+        `translate(${pos.current.x}px, ${pos.current.y}px) translate(-50%,-50%) rotate(${active !== null ? "-3deg" : "0deg"})`;
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => { window.removeEventListener("mousemove", mv); cancelAnimationFrame(raf); };
+  }, [active]);
 
   return (
-    <section style={{ background: DARK_BG, color: "#e8e4de", padding: "100px 28px 110px" }}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 56, flexWrap: "wrap", gap: 12 }}>
+    <section id="services" style={{ background: DARK_BG, color: "#e8e4de", padding: "110px 28px 120px", position: "relative", overflow: "hidden" }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 64, flexWrap: "wrap", gap: 12 }}>
         <h2 style={{ fontFamily: SERIF, fontStyle: "italic", fontWeight: 400, fontSize: "clamp(40px,6vw,84px)", letterSpacing: "-.02em", color: "#e8e4de" }}>What I Do</h2>
-        <span style={{ fontFamily: SANS, fontSize: 11, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(232,228,222,0.4)" }}>Services Tree</span>
+        <span style={{ fontFamily: SANS, fontSize: 11, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(232,228,222,0.4)" }}>Capabilities — 05</span>
       </div>
 
-      {/* root node */}
-      <div style={{ fontFamily: SANS, fontSize: 13, letterSpacing: ".04em", color: "#e8e4de", paddingBottom: 22, marginBottom: 8, borderBottom: "1px solid rgba(232,228,222,0.12)", display: "flex", alignItems: "center", gap: 12 }}>
-        <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#e8e4de", display: "block" }} />
-        KARA — Brand &amp; Creative Design
-      </div>
-
-      <div style={{ paddingLeft: 4 }}>
-        {TREE.map((node, i) => {
-          const isOpen = open.has(node.id);
+      {/* hover list */}
+      <div onMouseLeave={() => setActive(null)}>
+        {CAPS.map((cap, i) => {
+          const dim = active !== null && active !== i;
           return (
-            <div key={node.id} style={{ borderBottom: i < TREE.length - 1 ? "1px solid rgba(232,228,222,0.1)" : "none" }}>
-              <button onClick={() => toggle(node.id)}
-                style={{ width: "100%", background: "none", border: "none", cursor: "none", color: "#e8e4de",
-                  display: "flex", alignItems: "center", gap: 16, padding: "20px 8px", textAlign: "left" }}>
-                <span style={{ fontFamily: SANS, fontSize: 15, width: 16, textAlign: "center", color: "rgba(232,228,222,0.6)" }}>{isOpen ? "−" : "+"}</span>
-                <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: "clamp(24px,3vw,40px)", letterSpacing: "-.01em" }}>{node.label}</span>
-                <span style={{ marginLeft: "auto", fontFamily: SANS, fontSize: 10, letterSpacing: ".16em", color: "rgba(232,228,222,0.35)" }}>
-                  {String(node.children.length).padStart(2, "0")}
-                </span>
-              </button>
-              <div style={{ maxHeight: isOpen ? 500 : 0, overflow: "hidden", transition: "max-height .5s cubic-bezier(.16,1,.3,1)" }}>
-                <div style={{ paddingLeft: 40, paddingBottom: 14 }}>
-                  {node.children.map((c) => (
-                    <div key={c} style={{ display: "flex", alignItems: "center", gap: 14, padding: "9px 0",
-                      fontFamily: SANS, fontSize: 14, color: "rgba(232,228,222,0.6)" }}>
-                      <span style={{ width: 18, height: 1, background: "rgba(232,228,222,0.3)", display: "block" }} />
-                      {c}
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <div key={cap.label}
+              data-label={cap.label}
+              onMouseEnter={() => setActive(i)}
+              style={{
+                display: "flex", alignItems: "center", gap: 24,
+                padding: "26px 8px",
+                borderTop: "1px solid rgba(232,228,222,0.12)",
+                borderBottom: i === CAPS.length - 1 ? "1px solid rgba(232,228,222,0.12)" : "none",
+                cursor: "pointer",
+                opacity: dim ? 0.35 : 1,
+                transform: active === i ? "translateX(24px)" : "translateX(0)",
+                transition: "opacity .4s ease, transform .5s cubic-bezier(.16,1,.3,1)",
+              }}>
+              <span style={{ fontFamily: SANS, fontSize: 11, letterSpacing: ".16em", color: "rgba(232,228,222,0.4)", width: 30 }}>
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: "clamp(30px,4.4vw,62px)", letterSpacing: "-.01em", lineHeight: 1, whiteSpace: "nowrap" }}>
+                {cap.label}
+              </span>
+              <span style={{ marginLeft: "auto", fontFamily: SANS, fontSize: 12, letterSpacing: ".1em", textTransform: "uppercase",
+                color: "rgba(232,228,222,0.5)", opacity: active === i ? 1 : 0, transform: active === i ? "translateX(0)" : "translateX(-12px)",
+                transition: "opacity .4s ease, transform .4s ease" }}>
+                {cap.detail}
+              </span>
             </div>
           );
         })}
+      </div>
+
+      {/* floating cursor-follow image */}
+      <div ref={imgWrap} style={{
+        position: "fixed", top: 0, left: 0, width: "min(34vw, 360px)", aspectRatio: "4 / 3",
+        pointerEvents: "none", zIndex: 40, borderRadius: 8, overflow: "hidden",
+        opacity: active !== null ? 1 : 0, scale: active !== null ? "1" : "0.85",
+        transition: "opacity .4s ease, scale .4s cubic-bezier(.16,1,.3,1)",
+        boxShadow: "0 30px 80px rgba(0,0,0,0.5)", willChange: "transform",
+      }}>
+        {CAPS.map((cap, i) => (
+          <img key={cap.label} src={cap.img} alt="" loading="lazy"
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",
+              opacity: active === i ? 1 : 0, transition: "opacity .35s ease" }} />
+        ))}
       </div>
     </section>
   );
@@ -532,62 +547,77 @@ function ContactFooter() {
     setToast(true);
     setTimeout(() => setToast(false), 1800);
   };
+  const NAV = [["Work", "#work"], ["About", "#about"], ["Services", "#services"], ["Contact", "#contact"]];
   const socials = [["madebykara.com", "https://madebykara.com"], ["Upwork", "https://upwork.com"], ["Fiverr", "https://fiverr.com"], ["Instagram", "https://instagram.com"], ["LinkedIn", "https://linkedin.com"]];
 
+  const colHead = { fontFamily: SANS, fontSize: 10, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(232,228,222,0.4)", marginBottom: 22 };
+
   return (
-    <section id="contact" style={{ background: DARK_BG, color: "#e8e4de", padding: "100px 28px 28px", position: "relative" }}>
-      <h2 style={{ fontFamily: SERIF, fontStyle: "italic", fontWeight: 400, fontSize: "clamp(52px,9vw,150px)", letterSpacing: "-.03em", lineHeight: .98, marginBottom: 72 }}>
+    <section id="contact" style={{ background: DARK_BG, color: "#e8e4de", padding: "110px 28px 28px", position: "relative", overflow: "hidden" }}>
+      <h2 style={{ fontFamily: SERIF, fontStyle: "italic", fontWeight: 400, fontSize: "clamp(52px,9vw,150px)", letterSpacing: "-.03em", lineHeight: .98, marginBottom: 80 }}>
         Let's get to work.
       </h2>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, paddingBottom: 64 }}>
-        {/* left — contact person */}
-        <div style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
-          <div style={{ width: 52, height: 52, borderRadius: "50%", background: "linear-gradient(135deg,#3a3a3a,#1a1a1a)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: SERIF, fontStyle: "italic", fontSize: 20, color: "#e8e4de" }}>K</div>
-          <div>
-            <div style={{ fontFamily: SANS, fontSize: 15, color: "#e8e4de", marginBottom: 3 }}>Karan Sandhu</div>
-            <div style={{ fontFamily: SANS, fontSize: 11, letterSpacing: ".1em", textTransform: "uppercase", color: "rgba(232,228,222,0.4)", marginBottom: 14 }}>Brand Designer</div>
-            <button onClick={copyEmail}
-              style={{ background: "none", border: "none", cursor: "none", padding: 0, color: "#e8e4de",
-                fontFamily: SERIF, fontStyle: "italic", fontSize: "clamp(20px,2.4vw,32px)", letterSpacing: "-.01em",
-                borderBottom: "1px solid rgba(232,228,222,0.25)", paddingBottom: 2 }}>
-              hello@madebykara.com
-            </button>
+      {/* two columns: navigation + contact */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, paddingBottom: 120 }}>
+        {/* column 1 — navigation */}
+        <div>
+          <div style={colHead}>Navigation</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {NAV.map(([l, h]) => (
+              <a key={h} href={h} data-label={`Go to ${l}`}
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: 360,
+                  padding: "12px 0", borderBottom: "1px solid rgba(232,228,222,0.1)", textDecoration: "none",
+                  fontFamily: SERIF, fontStyle: "italic", fontSize: "clamp(22px,2.6vw,34px)", color: "#e8e4de", letterSpacing: "-.01em" }}>
+                {l}<span style={{ fontFamily: SANS, fontSize: 12, color: "rgba(232,228,222,0.4)" }}>→</span>
+              </a>
+            ))}
           </div>
         </div>
 
-        {/* right — socials */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {socials.map(([l, h]) => (
-            <a key={l} href={h} target="_blank" rel="noreferrer"
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0",
-                borderBottom: "1px solid rgba(232,228,222,0.1)", textDecoration: "none",
-                fontFamily: SANS, fontSize: 15, color: "#e8e4de" }}>
-              {l}<span style={{ fontSize: 13, color: "rgba(232,228,222,0.4)" }}>↗</span>
-            </a>
-          ))}
+        {/* column 2 — contact */}
+        <div>
+          <div style={colHead}>Contact</div>
+          <div style={{ fontFamily: SANS, fontSize: 15, color: "#e8e4de", marginBottom: 2 }}>Karan Sandhu</div>
+          <div style={{ fontFamily: SANS, fontSize: 11, letterSpacing: ".1em", textTransform: "uppercase", color: "rgba(232,228,222,0.4)", marginBottom: 8 }}>Brand &amp; Creative Designer · Dubai, UAE</div>
+          <button onClick={copyEmail} data-label="Copy email"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: "#e8e4de", marginBottom: 28,
+              fontFamily: SERIF, fontStyle: "italic", fontSize: "clamp(22px,2.8vw,38px)", letterSpacing: "-.01em",
+              borderBottom: "1px solid rgba(232,228,222,0.25)", paddingBottom: 2 }}>
+            hello@madebykara.com
+          </button>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {socials.map(([l, h]) => (
+              <a key={l} href={h} target="_blank" rel="noreferrer" data-label={l}
+                style={{ fontFamily: SANS, fontSize: 11, letterSpacing: ".08em", color: "rgba(232,228,222,0.7)", textDecoration: "none",
+                  border: "1px solid rgba(232,228,222,0.18)", borderRadius: 100, padding: "8px 15px" }}>
+                {l} ↗
+              </a>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* BIG logo bottom-right */}
+      <img src="/images/logo/kara-white-logo.svg" alt="KARA" aria-hidden
+        style={{ display: "block", width: "min(46vw, 620px)", marginLeft: "auto", marginBottom: 28, opacity: 0.92 }} />
 
       <div style={{ height: 1, background: "rgba(232,228,222,0.12)" }} />
 
       {/* footer bar */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "24px 0", flexWrap: "wrap", gap: 12 }}>
-        <img src="/images/logo/kara-white-logo.svg" alt="KARA" style={{ height: 13, opacity: 0.7 }} />
-        <div style={{ display: "flex", gap: 24 }}>
-          {[["Work", "#work"], ["About", "#about"], ["Contact", "#contact"]].map(([l, h]) => (
-            <a key={h} href={h} style={{ fontFamily: SANS, fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: "rgba(232,228,222,0.5)", textDecoration: "none" }}>{l}</a>
-          ))}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 0", flexWrap: "wrap", gap: 12 }}>
+        <div style={{ fontFamily: SANS, fontSize: 10, letterSpacing: ".14em", textTransform: "uppercase", color: "rgba(232,228,222,0.35)" }}>
+          © 2026 Karan Sandhu
         </div>
         <div style={{ fontFamily: SANS, fontSize: 10, letterSpacing: ".14em", textTransform: "uppercase", color: "rgba(232,228,222,0.35)" }}>
-          © 2026 Karan Sandhu · Dubai
+          Dubai, UAE
         </div>
       </div>
 
       {/* back to top */}
-      <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        style={{ position: "absolute", right: 28, bottom: 80, width: 44, height: 44, borderRadius: "50%",
-          border: "1px solid rgba(232,228,222,0.25)", background: "none", cursor: "none", color: "#e8e4de", fontSize: 16 }}>
+      <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} data-label="Back to top"
+        style={{ position: "absolute", right: 28, top: 110, width: 44, height: 44, borderRadius: "50%",
+          border: "1px solid rgba(232,228,222,0.25)", background: "none", cursor: "pointer", color: "#e8e4de", fontSize: 16 }}>
         ↑
       </button>
 
@@ -623,7 +653,7 @@ export default function App() {
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
         html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
-        a, button { cursor: none; }
+        a, button { cursor: pointer; }
         ::selection { background: #111; color: #ccc8c0; }
         ::-webkit-scrollbar { width: 0; height: 0; }
         @keyframes pulse {
@@ -633,7 +663,7 @@ export default function App() {
         }
       `}</style>
 
-      <Cursor />
+      <CursorLabel />
 
       {projectPage !== null ? (
         <ProjectPage
@@ -650,7 +680,7 @@ export default function App() {
           <main>
             <Hero ready={ready} />
             <WorkSection onActiveBg={setActiveBg} onOpen={openProject} />
-            <ServicesTree />
+            <Capabilities />
             <About />
             <ContactFooter />
           </main>
