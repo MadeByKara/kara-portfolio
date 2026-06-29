@@ -14,8 +14,8 @@ const MUTED_D="rgba(247,245,242,0.35)";
 const BDR_D = "rgba(247,245,242,0.08)";
 const RAIL  = 220;
 const NAV_H = 64;
-const F_SERIF="'Instrument Serif',Georgia,serif";
-const F_SANS ="'Geist','Helvetica Neue',sans-serif";
+const F_SERIF="'Space Grotesk','Helvetica Neue',sans-serif";
+const F_SANS ="'Inter','Helvetica Neue',sans-serif";
 
 // ── PROJECT IMAGES ────────────────────────────────────────────────────────────
 // Each project gets an array of images.
@@ -315,7 +315,7 @@ export default function ProjectPage({ project, onBack, onNext, onPrev, totalProj
         <div>
           <p style={{ ...lbl, color: MUTED, marginBottom: 20, opacity: .55 }}>{project.id} / {totalProjects}</p>
           <h1 style={{
-            fontFamily: F_SERIF, fontStyle: "italic", fontWeight: 400,
+            fontFamily: F_SERIF, fontStyle: "normal", fontWeight: 400,
             fontSize: "clamp(20px,1.8vw,32px)", lineHeight: 1.15,
             color: INK, margin: 0, letterSpacing: "-.01em",
             whiteSpace: "pre-line",
@@ -413,7 +413,7 @@ export default function ProjectPage({ project, onBack, onNext, onPrev, totalProj
           padding: "0 48px", background: BG,
         }}>
           <span style={{ ...lbl, color: MUTED }}>Project Detail</span>
-          <span style={{ fontFamily: F_SERIF, fontStyle: "italic", fontSize: 12, color: MUTED }}>
+          <span style={{ fontFamily: F_SERIF, fontStyle: "normal", fontSize: 12, color: MUTED }}>
             {images.length} image{images.length !== 1 ? "s" : ""}
           </span>
         </div>
@@ -436,7 +436,7 @@ export default function ProjectPage({ project, onBack, onNext, onPrev, totalProj
               <button
                 onClick={onNext}
                 style={{
-                  fontFamily: F_SERIF, fontStyle: "italic", fontWeight: 400,
+                  fontFamily: F_SERIF, fontStyle: "normal", fontWeight: 400,
                   fontSize: "clamp(28px,3.5vw,52px)", color: INK,
                   background: "none", border: "none", cursor: "pointer", padding: 0,
                   letterSpacing: "-.01em", lineHeight: 1, textAlign: "left",
