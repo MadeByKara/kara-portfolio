@@ -185,7 +185,7 @@ function Hero({ ready, isDark }) {
     <span style={{ display: "block", overflow: "hidden" }}>
       <span style={{
         display: "block", fontFamily: HEAD, fontWeight: 600,
-        fontSize: "clamp(40px,7vw,108px)", lineHeight: 1.0, letterSpacing: "-.03em", color: INK,
+        fontSize: "clamp(32px,4.4vw,78px)", lineHeight: 1.02, letterSpacing: "-.03em", color: INK,
         transform: ready ? "translateY(0)" : "translateY(110%)",
         transition: `transform .9s cubic-bezier(.16,1,.3,1) ${delay}s`,
       }}>{children}</span>
@@ -194,43 +194,52 @@ function Hero({ ready, isDark }) {
   return (
     <section id="top" style={{
       height: "100vh", minHeight: 640, background: "transparent", position: "relative",
-      display: "flex", flexDirection: "column", justifyContent: "flex-end",
-      padding: "0 28px 44px", borderBottom: `1px solid ${BORDER}`,
+      display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "100%", gap: 40,
+      padding: "0 28px", borderBottom: `1px solid ${BORDER}`,
     }}>
-      {/* big logo — top right */}
-      <img src={isDark ? "/images/logo/kara-white-logo.svg" : "/images/logo/kara-black-logo.svg"} alt="KARA"
-        style={{ position: "absolute", top: 72, right: 28, width: "min(34vw, 460px)", display: "block",
-          opacity: ready ? 1 : 0, transform: ready ? "translateY(0)" : "translateY(14px)",
-          transition: "opacity 1s ease .2s, transform 1s cubic-bezier(.16,1,.3,1) .2s" }} />
+      {/* LEFT — big logo, top aligned */}
+      <div style={{ display: "flex", alignItems: "flex-start", paddingTop: 92 }}>
+        <img src={isDark ? "/images/logo/kara-white-logo.svg" : "/images/logo/kara-black-logo.svg"} alt="KARA"
+          style={{ width: "min(48vw, 700px)", display: "block",
+            opacity: ready ? 1 : 0, transform: ready ? "translateY(0)" : "translateY(14px)",
+            transition: "opacity 1s ease .2s, transform 1s cubic-bezier(.16,1,.3,1) .2s" }} />
+      </div>
 
-      {/* top-left label */}
+      {/* RIGHT — text column */}
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", paddingTop: 96, paddingBottom: 44 }}>
+        <p style={{ fontFamily: BODY, fontSize: 14, lineHeight: 1.65, color: ink(0.6), maxWidth: 360,
+          opacity: ready ? 1 : 0, transform: ready ? "translateY(0)" : "translateY(10px)",
+          transition: "opacity .8s ease .3s, transform .8s ease .3s" }}>
+          Some say a logo is enough. KARA is a brand studio that believes the audience comes first, always.
+        </p>
+        <div>
+          <div style={{ marginBottom: 34 }}>
+            <Clip delay={0.5}>Be the audience.</Clip>
+            <Clip delay={0.62}>Build the brand.</Clip>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 20,
+            opacity: ready ? 1 : 0, transition: "opacity .8s ease 1.1s" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#3a7d44", display: "block",
+                boxShadow: "0 0 0 0 rgba(58,125,68,.5)", animation: "pulse 2.4s infinite" }} />
+              <span style={{ fontFamily: BODY, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: INK }}>
+                Available for work
+              </span>
+            </div>
+            <p style={{ fontFamily: BODY, fontSize: 12, lineHeight: 1.6, color: MUTED, maxWidth: 260 }}>
+              Building brands that say something across FMCG, lifestyle, hospitality and tech.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div style={{ position: "absolute", top: 30, left: 28, opacity: ready ? 1 : 0, transition: "opacity .7s ease .4s",
         fontFamily: BODY, fontSize: 10, letterSpacing: ".2em", textTransform: "uppercase", color: MUTED }}>
         Brand &amp; Creative Designer · Dubai
       </div>
-
-      {/* bottom-left content */}
-      <p style={{ fontFamily: BODY, fontSize: 14, lineHeight: 1.65, color: ink(0.6), maxWidth: 400, marginBottom: 30,
-        opacity: ready ? 1 : 0, transform: ready ? "translateY(0)" : "translateY(10px)",
-        transition: "opacity .8s ease .3s, transform .8s ease .3s" }}>
-        Some say a logo is enough. KARA is a brand studio that believes the audience comes first, always.
-      </p>
-      <div>
-        <Clip delay={0.5}>Be the audience.</Clip>
-        <Clip delay={0.62}>Build the brand.</Clip>
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 20, marginTop: 34,
-        opacity: ready ? 1 : 0, transition: "opacity .8s ease 1.1s" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#3a7d44", display: "block",
-            boxShadow: "0 0 0 0 rgba(58,125,68,.5)", animation: "pulse 2.4s infinite" }} />
-          <span style={{ fontFamily: BODY, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: INK }}>
-            Available for work
-          </span>
-        </div>
-        <p style={{ fontFamily: BODY, fontSize: 12, lineHeight: 1.6, color: MUTED, maxWidth: 300 }}>
-          Building brands that say something across FMCG, lifestyle, hospitality and tech.
-        </p>
+      <div style={{ position: "absolute", top: 30, right: 28, opacity: ready ? 1 : 0, transition: "opacity .7s ease .4s",
+        fontFamily: BODY, fontSize: 10, letterSpacing: ".2em", textTransform: "uppercase", color: MUTED }}>
+        Est. 2023 · Portfolio {String(TOTAL).padStart(2, "0")}
       </div>
     </section>
   );
@@ -285,7 +294,7 @@ function FolderCard({ project, index, onOpen }) {
   return (
     <div ref={innerRef} style={{ position: "sticky", top: `calc(120px + ${index * 2}px)`, paddingTop: 24 }}>
       <div data-label={`View · ${project.title}`} onClick={onOpen}
-        style={{ background: PAPER, borderRadius: "6px 6px 0 0", overflow: "hidden",
+        style={{ maxWidth: 1080, margin: "0 auto", background: PAPER, borderRadius: "6px 6px 0 0", overflow: "hidden",
           border: `1px solid ${BORDER}`, borderBottom: "none", boxShadow: "none",
           transform: vis ? "translateY(0)" : "translateY(60px)", opacity: vis ? 1 : 0,
           transition: "transform .9s cubic-bezier(.16,1,.3,1), opacity .9s ease", cursor: "pointer" }}>
@@ -321,12 +330,10 @@ function FolderCard({ project, index, onOpen }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // CAPABILITIES — interactive flow field (vector lines swirl around the cursor)
 // ─────────────────────────────────────────────────────────────────────────────
-const DISCIPLINES = [
-  { t: "Brand Identity",    x: 0.19, y: 0.26 },
-  { t: "Art Direction",     x: 0.70, y: 0.20 },
-  { t: "Digital Design",    x: 0.48, y: 0.52 },
-  { t: "Print & Packaging", x: 0.24, y: 0.74 },
-  { t: "Strategy",          x: 0.76, y: 0.70 },
+const CAPS = [
+  { t: "UX & Product Design",       sub: "Flows, prototypes & product thinking", dir: "left",  dur: 30 },
+  { t: "Brand Direction",           sub: "Identity systems & art direction",     dir: "right", dur: 36 },
+  { t: "Social Campaign Creatives", sub: "Scroll-stopping content & paid ads",   dir: "left",  dur: 26 },
 ];
 
 function FlowField({ isDark }) {
@@ -386,19 +393,39 @@ function FlowField({ isDark }) {
 }
 
 function Capabilities() {
+  const [hover, setHover] = useState(null);
   return (
-    <section id="services" style={{ background: "transparent", padding: "90px 28px 60px", borderTop: `1px solid ${BORDER}` }}>
+    <section id="services" style={{ background: "transparent", padding: "90px 28px 40px", borderTop: `1px solid ${BORDER}` }}>
       <SectionHead label="(02) What I Do"
-        heading="One studio, every layer of the brand."
-        copy="Identity, art direction, digital and strategy all pull toward one centre. Sweep your cursor across the page to stir the field." />
-      <div style={{ position: "relative", width: "100%", height: "min(66vh, 640px)" }}>
-        {DISCIPLINES.map((d) => (
-          <div key={d.t} style={{ position: "absolute", left: `${d.x * 100}%`, top: `${d.y * 100}%`, transform: "translate(-50%,-50%)",
-            display: "flex", alignItems: "center", gap: 8, pointerEvents: "none" }}>
-            <span style={{ width: 7, height: 7, background: INK, display: "block" }} />
-            <span style={{ fontFamily: HEAD, fontWeight: 500, fontSize: "clamp(15px,1.5vw,22px)", color: INK, letterSpacing: "-.01em", whiteSpace: "nowrap" }}>{d.t}</span>
-          </div>
-        ))}
+        heading="Three ways I move the needle."
+        copy="From first-touch product flows to full campaign rollouts. Hover a line to feel it, and see what it covers." />
+      <div style={{ margin: "0 -28px", borderTop: `1px solid ${BORDER}` }}>
+        {CAPS.map((c, i) => {
+          const on = hover === i;
+          return (
+            <div key={c.t} data-label={c.sub}
+              onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}
+              style={{ position: "relative", overflow: "hidden", borderBottom: `1px solid ${BORDER}`,
+                padding: "clamp(16px,2.6vw,34px) 0", cursor: "pointer",
+                background: on ? INK : "transparent", transition: "background .45s ease" }}>
+              <div style={{ display: "flex", width: "max-content",
+                animation: `${c.dir === "left" ? "mqL" : "mqR"} ${c.dur}s linear infinite`,
+                animationPlayState: on ? "paused" : "running" }}>
+                {[0, 1].map(rep => (
+                  <div key={rep} style={{ display: "flex", flexShrink: 0 }}>
+                    {Array.from({ length: 6 }).map((_, k) => (
+                      <span key={k} style={{ display: "inline-flex", alignItems: "center", gap: "0.45em", paddingRight: "0.45em",
+                        fontFamily: HEAD, fontWeight: 600, fontSize: "clamp(30px,5.4vw,88px)", letterSpacing: "-.02em",
+                        color: on ? "var(--bg)" : INK, transition: "color .45s ease", whiteSpace: "nowrap" }}>
+                        {c.t}<span style={{ fontSize: "0.32em", opacity: 0.4 }}>✦</span>
+                      </span>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
@@ -590,6 +617,8 @@ export default function App() {
           70%  { box-shadow: 0 0 0 8px rgba(58,125,68,0); }
           100% { box-shadow: 0 0 0 0 rgba(58,125,68,0); }
         }
+        @keyframes mqL { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        @keyframes mqR { from { transform: translateX(-50%); } to { transform: translateX(0); } }
       `}</style>
 
       <CursorLabel />
