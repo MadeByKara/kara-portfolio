@@ -283,21 +283,12 @@ function WorkSection({ onOpen }) {
 }
 
 function FolderCard({ project, index, onOpen }) {
-  const [vis, setVis] = useState(false);
-  const innerRef = useRef(null);
   const strip = stripFor(project.id, project.img);
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVis(true); }, { threshold: 0.15 });
-    if (innerRef.current) obs.observe(innerRef.current);
-    return () => obs.disconnect();
-  }, []);
   return (
-    <div ref={innerRef} style={{ position: "sticky", top: `calc(120px + ${index * 2}px)`, paddingTop: 24 }}>
+    <div style={{ position: "sticky", top: `calc(120px + ${index * 2}px)`, paddingTop: 24 }}>
       <div data-label={`View · ${project.title}`} onClick={onOpen}
         style={{ maxWidth: 1080, margin: "0 auto", background: PAPER, borderRadius: "6px 6px 0 0", overflow: "hidden",
-          border: `1px solid ${BORDER}`, borderBottom: "none", boxShadow: "none",
-          transform: vis ? "translateY(0)" : "translateY(60px)", opacity: vis ? 1 : 0,
-          transition: "transform .9s cubic-bezier(.16,1,.3,1), opacity .9s ease", cursor: "pointer" }}>
+          border: `1px solid ${BORDER}`, borderBottom: "none", boxShadow: "none", cursor: "pointer" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 22px", borderBottom: `1px solid ${BORDER}` }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 16, minWidth: 0 }}>
             <span style={{ fontFamily: BODY, fontSize: 10, letterSpacing: ".14em", color: MUTED, whiteSpace: "nowrap" }}>{project.code}</span>
@@ -330,19 +321,37 @@ function FolderCard({ project, index, onOpen }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // CAPABILITIES — interactive flow field (vector lines swirl around the cursor)
 // ─────────────────────────────────────────────────────────────────────────────
-// interactive radar chart — breathes on its own, stretches toward the cursor
-const RADAR_AXES = ["UX & Product", "Brand Direction", "Social Campaigns", "Art Direction", "Strategy", "Web & Motion"];
-const RADAR_BASE = [0.92, 0.84, 0.9, 0.72, 0.78, 0.68];
+// interactive dotted globe — auto-spins, drag to rotate, disciplines pinned on it
+const GLOBE_MARKERS = [
+  { label: "UX & Product Design",       lat: 24,  lon: -18 },
+  { label: "Brand Direction",           lat: -6,  lon: 96 },
+  { label: "Social Campaign Creatives", lat: 42,  lon: 186 },
+];
 
-function RadarChart({ isDark }) {
+function Globe({ isDark }) {
   const canvasRef = useRef(null);
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    let W = 0, H = 0, dpr = 1, raf, t = 0;
-    const N = RADAR_AXES.length;
-    const boost = new Array(N).fill(0);
-    const mouse = { x: 0, y: 0, active: false };
+    let W = 0, H = 0, dpr = 1, raf;
+
+    // fibonacci sphere
+    const N = 760, pts = [];
+    const inc = Math.PI * (3 - Math.sqrt(5));
+    for (let i = 0; i < N; i++) {
+      const y = 1 - (i / (N - 1)) * 2;
+      const r = Math.sqrt(1 - y * y);
+      const phi = i * inc;
+      pts.push([Math.cos(phi) * r, y, Math.sin(phi) * r]);
+    }
+    const toVec = (lat, lon) => {
+      const la = lat * Math.PI / 180, lo = lon * Math.PI / 180;
+      return [Math.cos(la) * Math.cos(lo), Math.sin(la), Math.cos(la) * Math.sin(lo)];
+    };
+    const markers = GLOBE_MARKERS.map(m => ({ label: m.label, v: toVec(m.lat, m.lon) }));
+
+    let rotY = 0, rotX = -0.35, velY = 0.0024, velX = 0;
+    const drag = { on: false, px: 0, py: 0 };
 
     const resize = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -352,70 +361,70 @@ function RadarChart({ isDark }) {
     };
     resize();
     window.addEventListener("resize", resize);
-    const move = e => { const r = canvas.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; };
-    const enter = () => { mouse.active = true; };
-    const leave = () => { mouse.active = false; };
-    canvas.addEventListener("mousemove", move);
-    canvas.addEventListener("mouseenter", enter);
-    canvas.addEventListener("mouseleave", leave);
 
-    const ang = i => -Math.PI / 2 + i * 2 * Math.PI / N;
+    const down = e => { drag.on = true; drag.px = e.clientX; drag.py = e.clientY; canvas.style.cursor = "grabbing"; };
+    const up = () => { drag.on = false; canvas.style.cursor = "grab"; };
+    const mv = e => {
+      if (!drag.on) return;
+      const dx = e.clientX - drag.px, dy = e.clientY - drag.py;
+      drag.px = e.clientX; drag.py = e.clientY;
+      rotY += dx * 0.006; rotX += dy * 0.006;
+      rotX = Math.max(-1.2, Math.min(1.2, rotX));
+      velY = dx * 0.006; velX = dy * 0.002;
+    };
+    canvas.addEventListener("pointerdown", down);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointermove", mv);
+
+    const project = (p) => {
+      const cY = Math.cos(rotY), sY = Math.sin(rotY);
+      const x = p[0] * cY + p[2] * sY;
+      const z = -p[0] * sY + p[2] * cY;
+      const cX = Math.cos(rotX), sX = Math.sin(rotX);
+      return [x, p[1] * cX - z * sX, p[1] * sX + z * cX];
+    };
 
     const draw = () => {
-      t += 0.012;
       const ink = isDark ? "240,239,233" : "20,20,15";
+      if (!drag.on) {
+        rotY += velY; rotX += velX;
+        velY += (0.0024 - velY) * 0.03; velX *= 0.93;
+        rotX = Math.max(-1.2, Math.min(1.2, rotX));
+      }
       ctx.clearRect(0, 0, W, H);
-      const cx = W / 2, cy = H / 2, R = Math.min(H * 0.36, W * 0.26);
+      const cx = W / 2, cy = H / 2, R = Math.min(W, H) * 0.36;
 
-      // smooth per-axis cursor pull
-      for (let i = 0; i < N; i++) {
-        let target = 0;
-        if (mouse.active) {
-          const ma = Math.atan2(mouse.y - cy, mouse.x - cx);
-          let da = Math.abs(ang(i) - ma); da = Math.min(da, Math.PI * 2 - da);
-          const md = Math.hypot(mouse.x - cx, mouse.y - cy);
-          const cone = Math.max(0, 1 - da / (Math.PI * 0.6));
-          target = cone * Math.min(md / R, 1.2) * 0.42;
-        }
-        boost[i] += (target - boost[i]) * 0.12;
+      for (const p of pts) {
+        const [x, y, z] = project(p);
+        const depth = (z + 1) / 2;
+        ctx.fillStyle = `rgba(${ink},${0.1 + depth * 0.5})`;
+        ctx.beginPath(); ctx.arc(cx + x * R, cy + y * R, 0.6 + depth * 1.7, 0, 7); ctx.fill();
       }
 
-      // grid rings + spokes
-      ctx.strokeStyle = `rgba(${ink},0.1)`; ctx.lineWidth = 1;
-      for (let k = 1; k <= 4; k++) {
-        const rk = R * k / 4;
-        ctx.beginPath();
-        for (let i = 0; i <= N; i++) { const x = cx + Math.cos(ang(i)) * rk, y = cy + Math.sin(ang(i)) * rk; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
-        ctx.stroke();
-      }
-      for (let i = 0; i < N; i++) { ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(ang(i)) * R, cy + Math.sin(ang(i)) * R); ctx.stroke(); }
-
-      // data polygon
-      const pts = [];
-      for (let i = 0; i < N; i++) {
-        const v = Math.min(RADAR_BASE[i] + 0.05 * Math.sin(t * (0.7 + i * 0.06) + i) + boost[i], 1.25);
-        pts.push([cx + Math.cos(ang(i)) * R * v, cy + Math.sin(ang(i)) * R * v]);
-      }
-      ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath();
-      ctx.fillStyle = `rgba(${ink},0.1)`; ctx.fill();
-      ctx.strokeStyle = `rgba(${ink},0.75)`; ctx.lineWidth = 1.5; ctx.stroke();
-      pts.forEach((p, i) => { ctx.fillStyle = `rgba(${ink},0.9)`; ctx.beginPath(); ctx.arc(p[0], p[1], 3 + boost[i] * 11, 0, 7); ctx.fill(); });
-      ctx.fillStyle = `rgba(${ink},0.5)`; ctx.beginPath(); ctx.arc(cx, cy, 3, 0, 7); ctx.fill();
-
-      // labels
-      ctx.font = `500 12px ${BODY}`; ctx.fillStyle = `rgba(${ink},0.85)`; ctx.textBaseline = "middle";
-      for (let i = 0; i < N; i++) {
-        const c = Math.cos(ang(i)), s = Math.sin(ang(i));
-        const lx = cx + c * (R + 24), ly = cy + s * (R + 20);
-        ctx.textAlign = c > 0.25 ? "left" : c < -0.25 ? "right" : "center";
-        ctx.fillText(RADAR_AXES[i], lx, ly);
+      ctx.font = `500 12px ${BODY}`; ctx.textBaseline = "middle";
+      for (const m of markers) {
+        const [x, y, z] = project(m.v);
+        if (z < 0.03) continue;
+        const depth = (z + 1) / 2;
+        const sx = cx + x * R, sy = cy + y * R;
+        ctx.fillStyle = `rgba(${ink},${0.55 + depth * 0.45})`;
+        ctx.beginPath(); ctx.arc(sx, sy, 4, 0, 7); ctx.fill();
+        ctx.strokeStyle = `rgba(${ink},${0.35 * depth})`; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(sx, sy, 8, 0, 7); ctx.stroke();
+        ctx.fillStyle = `rgba(${ink},${0.9 * depth})`;
+        ctx.textAlign = x > 0 ? "left" : "right";
+        ctx.fillText(m.label, sx + (x > 0 ? 15 : -15), sy);
       }
       raf = requestAnimationFrame(draw);
     };
+    canvas.style.cursor = "grab";
     draw();
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); canvas.removeEventListener("mousemove", move); canvas.removeEventListener("mouseenter", enter); canvas.removeEventListener("mouseleave", leave); };
+    return () => {
+      cancelAnimationFrame(raf); window.removeEventListener("resize", resize);
+      canvas.removeEventListener("pointerdown", down); window.removeEventListener("pointerup", up); window.removeEventListener("pointermove", mv);
+    };
   }, [isDark]);
-  return <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />;
+  return <canvas ref={canvasRef} data-label="Drag to spin" style={{ width: "100%", height: "100%", display: "block", touchAction: "none" }} />;
 }
 
 function FlowField({ isDark }) {
@@ -478,10 +487,10 @@ function Capabilities({ isDark }) {
   return (
     <section id="services" style={{ background: "transparent", padding: "90px 28px 60px", borderTop: `1px solid ${BORDER}` }}>
       <SectionHead label="(02) What I Do"
-        heading="A live read on what I do."
-        copy="A working snapshot across product, brand and social. Move your cursor over the chart to pull it toward you." />
-      <div style={{ position: "relative", width: "100%", height: "min(64vh, 600px)" }}>
-        <RadarChart isDark={isDark} />
+        heading="Everything I do, in orbit."
+        copy="Product, brand and social all live in one system. Grab the globe and spin it to explore the disciplines." />
+      <div style={{ position: "relative", width: "100%", height: "min(70vh, 640px)" }}>
+        <Globe isDark={isDark} />
       </div>
     </section>
   );
