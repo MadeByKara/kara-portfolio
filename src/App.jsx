@@ -330,11 +330,93 @@ function FolderCard({ project, index, onOpen }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // CAPABILITIES — interactive flow field (vector lines swirl around the cursor)
 // ─────────────────────────────────────────────────────────────────────────────
-const CAPS = [
-  { t: "UX & Product Design",       sub: "Flows, prototypes & product thinking", dir: "left",  dur: 30 },
-  { t: "Brand Direction",           sub: "Identity systems & art direction",     dir: "right", dur: 36 },
-  { t: "Social Campaign Creatives", sub: "Scroll-stopping content & paid ads",   dir: "left",  dur: 26 },
-];
+// interactive radar chart — breathes on its own, stretches toward the cursor
+const RADAR_AXES = ["UX & Product", "Brand Direction", "Social Campaigns", "Art Direction", "Strategy", "Web & Motion"];
+const RADAR_BASE = [0.92, 0.84, 0.9, 0.72, 0.78, 0.68];
+
+function RadarChart({ isDark }) {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    let W = 0, H = 0, dpr = 1, raf, t = 0;
+    const N = RADAR_AXES.length;
+    const boost = new Array(N).fill(0);
+    const mouse = { x: 0, y: 0, active: false };
+
+    const resize = () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = canvas.clientWidth; H = canvas.clientHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    const move = e => { const r = canvas.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; };
+    const enter = () => { mouse.active = true; };
+    const leave = () => { mouse.active = false; };
+    canvas.addEventListener("mousemove", move);
+    canvas.addEventListener("mouseenter", enter);
+    canvas.addEventListener("mouseleave", leave);
+
+    const ang = i => -Math.PI / 2 + i * 2 * Math.PI / N;
+
+    const draw = () => {
+      t += 0.012;
+      const ink = isDark ? "240,239,233" : "20,20,15";
+      ctx.clearRect(0, 0, W, H);
+      const cx = W / 2, cy = H / 2, R = Math.min(H * 0.36, W * 0.26);
+
+      // smooth per-axis cursor pull
+      for (let i = 0; i < N; i++) {
+        let target = 0;
+        if (mouse.active) {
+          const ma = Math.atan2(mouse.y - cy, mouse.x - cx);
+          let da = Math.abs(ang(i) - ma); da = Math.min(da, Math.PI * 2 - da);
+          const md = Math.hypot(mouse.x - cx, mouse.y - cy);
+          const cone = Math.max(0, 1 - da / (Math.PI * 0.6));
+          target = cone * Math.min(md / R, 1.2) * 0.42;
+        }
+        boost[i] += (target - boost[i]) * 0.12;
+      }
+
+      // grid rings + spokes
+      ctx.strokeStyle = `rgba(${ink},0.1)`; ctx.lineWidth = 1;
+      for (let k = 1; k <= 4; k++) {
+        const rk = R * k / 4;
+        ctx.beginPath();
+        for (let i = 0; i <= N; i++) { const x = cx + Math.cos(ang(i)) * rk, y = cy + Math.sin(ang(i)) * rk; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+        ctx.stroke();
+      }
+      for (let i = 0; i < N; i++) { ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(ang(i)) * R, cy + Math.sin(ang(i)) * R); ctx.stroke(); }
+
+      // data polygon
+      const pts = [];
+      for (let i = 0; i < N; i++) {
+        const v = Math.min(RADAR_BASE[i] + 0.05 * Math.sin(t * (0.7 + i * 0.06) + i) + boost[i], 1.25);
+        pts.push([cx + Math.cos(ang(i)) * R * v, cy + Math.sin(ang(i)) * R * v]);
+      }
+      ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath();
+      ctx.fillStyle = `rgba(${ink},0.1)`; ctx.fill();
+      ctx.strokeStyle = `rgba(${ink},0.75)`; ctx.lineWidth = 1.5; ctx.stroke();
+      pts.forEach((p, i) => { ctx.fillStyle = `rgba(${ink},0.9)`; ctx.beginPath(); ctx.arc(p[0], p[1], 3 + boost[i] * 11, 0, 7); ctx.fill(); });
+      ctx.fillStyle = `rgba(${ink},0.5)`; ctx.beginPath(); ctx.arc(cx, cy, 3, 0, 7); ctx.fill();
+
+      // labels
+      ctx.font = `500 12px ${BODY}`; ctx.fillStyle = `rgba(${ink},0.85)`; ctx.textBaseline = "middle";
+      for (let i = 0; i < N; i++) {
+        const c = Math.cos(ang(i)), s = Math.sin(ang(i));
+        const lx = cx + c * (R + 24), ly = cy + s * (R + 20);
+        ctx.textAlign = c > 0.25 ? "left" : c < -0.25 ? "right" : "center";
+        ctx.fillText(RADAR_AXES[i], lx, ly);
+      }
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); canvas.removeEventListener("mousemove", move); canvas.removeEventListener("mouseenter", enter); canvas.removeEventListener("mouseleave", leave); };
+  }, [isDark]);
+  return <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />;
+}
 
 function FlowField({ isDark }) {
   const canvasRef = useRef(null);
@@ -392,40 +474,14 @@ function FlowField({ isDark }) {
   return <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />;
 }
 
-function Capabilities() {
-  const [hover, setHover] = useState(null);
+function Capabilities({ isDark }) {
   return (
-    <section id="services" style={{ background: "transparent", padding: "90px 28px 40px", borderTop: `1px solid ${BORDER}` }}>
+    <section id="services" style={{ background: "transparent", padding: "90px 28px 60px", borderTop: `1px solid ${BORDER}` }}>
       <SectionHead label="(02) What I Do"
-        heading="Three ways I move the needle."
-        copy="From first-touch product flows to full campaign rollouts. Hover a line to feel it, and see what it covers." />
-      <div style={{ margin: "0 -28px", borderTop: `1px solid ${BORDER}` }}>
-        {CAPS.map((c, i) => {
-          const on = hover === i;
-          return (
-            <div key={c.t} data-label={c.sub}
-              onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}
-              style={{ position: "relative", overflow: "hidden", borderBottom: `1px solid ${BORDER}`,
-                padding: "clamp(16px,2.6vw,34px) 0", cursor: "pointer",
-                background: on ? INK : "transparent", transition: "background .45s ease" }}>
-              <div style={{ display: "flex", width: "max-content",
-                animation: `${c.dir === "left" ? "mqL" : "mqR"} ${c.dur}s linear infinite`,
-                animationPlayState: on ? "paused" : "running" }}>
-                {[0, 1].map(rep => (
-                  <div key={rep} style={{ display: "flex", flexShrink: 0 }}>
-                    {Array.from({ length: 6 }).map((_, k) => (
-                      <span key={k} style={{ display: "inline-flex", alignItems: "center", gap: "0.45em", paddingRight: "0.45em",
-                        fontFamily: HEAD, fontWeight: 600, fontSize: "clamp(30px,5.4vw,88px)", letterSpacing: "-.02em",
-                        color: on ? "var(--bg)" : INK, transition: "color .45s ease", whiteSpace: "nowrap" }}>
-                        {c.t}<span style={{ fontSize: "0.32em", opacity: 0.4 }}>✦</span>
-                      </span>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
+        heading="A live read on what I do."
+        copy="A working snapshot across product, brand and social. Move your cursor over the chart to pull it toward you." />
+      <div style={{ position: "relative", width: "100%", height: "min(64vh, 600px)" }}>
+        <RadarChart isDark={isDark} />
       </div>
     </section>
   );
@@ -617,8 +673,6 @@ export default function App() {
           70%  { box-shadow: 0 0 0 8px rgba(58,125,68,0); }
           100% { box-shadow: 0 0 0 0 rgba(58,125,68,0); }
         }
-        @keyframes mqL { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-        @keyframes mqR { from { transform: translateX(-50%); } to { transform: translateX(0); } }
       `}</style>
 
       <CursorLabel />
@@ -636,7 +690,7 @@ export default function App() {
             <main>
               <Hero ready={ready} isDark={isDark} />
               <WorkSection onOpen={openProject} />
-              <Capabilities />
+              <Capabilities isDark={isDark} />
               <About />
               <ContactFooter />
             </main>
