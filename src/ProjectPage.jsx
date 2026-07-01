@@ -4,14 +4,12 @@
 
 import { useState, useEffect, useRef } from "react";
 
-// ── copy your exact tokens from App.jsx ──────────────────────────────────────
-const BG    = "#f7f5f2";
-const INK   = "#111111";
-const MUTED = "rgba(17,17,17,0.38)";
-const BORDER= "rgba(17,17,17,0.08)";
-const BG_D  = "#111111";
-const MUTED_D="rgba(247,245,242,0.35)";
-const BDR_D = "rgba(247,245,242,0.08)";
+// ── theme tokens (inherit CSS vars set on the App root so dark mode follows) ──
+const BG    = "var(--bg)";
+const INK   = "var(--ink)";
+const MUTED = "rgb(var(--ink-rgb) / 0.42)";
+const BORDER= "rgb(var(--ink-rgb) / 0.1)";
+const PAPER = "var(--paper)";
 const RAIL  = 220;
 const NAV_H = 64;
 const F_SERIF="'Space Grotesk','Helvetica Neue',sans-serif";
@@ -133,16 +131,8 @@ export const PROJECT_IMAGES = {
     "/images/kara/hoodie%202.png",
     "/images/kara/shirt%203.png",
   ],
-  // 06 — Donna Bella (no local images yet)
+  // 06 — Greenstone Rebrand
   "06": [
-    "https://cdn.myportfolio.com/48d87636-31af-478b-bbcf-604c0dbbcc71/497698d6-ce15-4458-ae08-7a3d60008533_carw_16x9x32.jpg?h=4be4d26c254f52a1ca092e856e0ccaaa",
-  ],
-  // 07 — Faya Cafe (no local images yet)
-  "07": [
-    "https://cdn.myportfolio.com/48d87636-31af-478b-bbcf-604c0dbbcc71/ba024d9e-76bf-419d-a84d-f8aef18c53a8_carw_16x9x32.jpg?h=519da39bc3db751c852ff11841b67157",
-  ],
-  // 08 — Greenstone Rebrand
-  "08": [
     "/images/greenstone/Thumbnail-100.jpg",
     "/images/greenstone/Greenstone-100.jpg",
     "/images/greenstone/colours-100.jpg",
@@ -159,8 +149,8 @@ export const PROJECT_IMAGES = {
     "/images/greenstone/Sweater%20Mockup.png",
     "/images/greenstone/website.jpg",
   ],
-  // 09 — Stygian Crypt
-  "09": [
+  // 07 — Stygian Crypt
+  "07": [
     "/images/stygian-crypt/Stygian%20Crypt%20Vol.%201.jpg",
     "/images/stygian-crypt/Mockup%201.jpg",
     "/images/stygian-crypt/cover%20mockup%203.jpg",
@@ -184,20 +174,8 @@ export const PROJECT_IMAGES = {
     "/images/stygian-crypt/Spread%2012.jpg",
     "/images/stygian-crypt/Spread%2013.jpg",
   ],
-  // 10 — Digital Art (no local images)
-  "10": [
-    "https://cdn.myportfolio.com/48d87636-31af-478b-bbcf-604c0dbbcc71/b5088995-23f1-4371-bea9-fbbe16b67200_carw_16x9x32.jpg?h=2baa372bd9b4e0cb5037182ddec701f2",
-  ],
-  // 11 — Logofolio (no local images)
-  "11": [
-    "https://cdn.myportfolio.com/48d87636-31af-478b-bbcf-604c0dbbcc71/6e42493f-29f7-4091-907a-ff8803365083_rwc_231x97x2676x1508x32.jpg?h=81e1365ea3f3209517b5160bf1dec94d",
-  ],
-  // 12 — Ganga Highway (no local images)
-  "12": [
-    "https://cdn.myportfolio.com/48d87636-31af-478b-bbcf-604c0dbbcc71/a14936c1-2425-4e78-8b83-4b7b46dca2a3_carw_16x9x32.png?h=71ea468610506a289a1d4902ea243ed9",
-  ],
-  // 13 — Analog The Room
-  "13": [
+  // 08 — Analog The Room
+  "08": [
     "/images/analog-the-room/ATR%20Behance%20Post.jpg",
     "/images/analog-the-room/ATR%20Behance%20Post2.jpg",
     "/images/analog-the-room/ATR%20Behance%20Post3.jpg",
@@ -232,6 +210,27 @@ export const PROJECT_IMAGES = {
     "/images/analog-the-room/ATR%20Behance%20Post32.jpg",
     "/images/analog-the-room/ATR%20Behance%20Post33.jpg",
     "/images/analog-the-room/ATR%20Behance%20Post%203412.jpg",
+  ],
+  // 09 — Maison Etherique
+  "09": [
+    "/images/maison%20etherique/Love_and_Harmony_kits.webp",
+    "/images/maison%20etherique/DSC_8170-2_1.webp",
+    "/images/maison%20etherique/DechenIncense-MaisonEtherique-Dubai1.webp",
+    "/images/maison%20etherique/DechenIncense-MaisonEtherique-Dubai3.webp",
+    "/images/maison%20etherique/DungkarIncense-MaisonEtherique-Dubai2.webp",
+    "/images/maison%20etherique/DungkarIncense-MaisonEtherique-Dubai3.webp",
+    "/images/maison%20etherique/PadmaIncense-MaisonEtherique-Dubai1.webp",
+    "/images/maison%20etherique/PadmaIncense-MaisonEtherique-Dubai2.webp",
+    "/images/maison%20etherique/SmatenIncense-MaisonEtherique-Dubai2.webp",
+    "/images/maison%20etherique/SmatenIncense-MaisonEtherique-Dubai3.webp",
+    "/images/maison%20etherique/Royal_sandalwood_box.webp",
+    "/images/maison%20etherique/Royal_sandalwood_incense.webp",
+    "/images/maison%20etherique/Royal_sandalwood_sticks.webp",
+    "/images/maison%20etherique/Energy_cleansing_kit_box.webp",
+    "/images/maison%20etherique/Energy-Cleansing-Kit-Dubai2.webp",
+    "/images/maison%20etherique/Home_blessing_kit_box.webp",
+    "/images/maison%20etherique/Home-Blessing-Kit-Dubai-Maison-Etherique.webp",
+    "/images/maison%20etherique/Palo-Santo-Bagg-of-5-Sticks-Dubai.webp",
   ],
 };
 
@@ -296,7 +295,7 @@ export default function ProjectPage({ project, onBack, onNext, onPrev, totalProj
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
           <span style={{ ...lbl, color: MUTED }}>
-            {project.id} / {String(totalProjects).padStart(2, "0")} — {project.cat}
+            {project.id} / {String(totalProjects).padStart(2, "0")} · {project.cat}
           </span>
         </div>
         <div style={{ borderLeft: `1px solid ${BORDER}`, display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 24px", gap: 20 }}>
