@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import ProjectPage, { PROJECT_IMAGES } from "./ProjectPage";
+import ProjectPage from "./ProjectPage";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FONTS + THEME TOKENS  (colours are CSS vars → light/dark just swaps them)
@@ -62,12 +62,6 @@ const PROJECTS = [
     desc:"A concept redesign of the Tabby app. Rethinking the buy now pay later flow with a cleaner visual system, clearer hierarchy and a calmer interface." },
 ];
 const TOTAL = PROJECTS.length;
-
-const stripFor = (id, cover) => {
-  const arr = PROJECT_IMAGES[id];
-  if (arr && arr.length) return arr.slice(0, 5);
-  return [cover, cover, cover, cover];
-};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CURSOR LABEL — normal OS cursor; a pill beside it names the destination
@@ -265,166 +259,79 @@ function SectionHead({ label, heading, copy }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // WORK — folder stack
 // ─────────────────────────────────────────────────────────────────────────────
+const BAR_H = 46;
+
 function WorkSection({ onOpen }) {
   return (
-    <section id="work" style={{ padding: "90px 28px 80px", background: "transparent" }}>
-      <SectionHead label="(01) Selected Work" heading="Nine projects, built to last."
-        copy="A working archive of brand identities, art direction and digital design, spanning 2023 to 2026." />
-      <div style={{ height: 52, display: "flex", alignItems: "center", justifyContent: "space-between",
-        borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, position: "sticky", top: 56, background: BG, zIndex: 50 }}>
-        <span style={{ fontFamily: BODY, fontSize: 11, letterSpacing: ".22em", textTransform: "uppercase", color: INK }}>Index</span>
-        <span style={{ fontFamily: BODY, fontSize: 11, letterSpacing: ".22em", textTransform: "uppercase", color: MUTED }}>{TOTAL} Projects</span>
+    <section id="work" style={{ padding: "90px 0 80px", background: "transparent" }}>
+      <div style={{ padding: "0 28px" }}>
+        <SectionHead label="(01) Selected Work" heading={`${TOTAL} projects, built to last.`}
+          copy="A working archive of brand identities, art direction and digital design, spanning 2023 to 2026. Scroll and the titles stack up top — click any one to reopen it." />
       </div>
-      {PROJECTS.map((p, i) => (
-        <FolderCard key={p.id} project={p} index={i} onOpen={() => onOpen(i)} />
-      ))}
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px" }}>
+        {PROJECTS.map((p, i) => (
+          <ProjectRow key={p.id} project={p} index={i} onOpen={() => onOpen(i)} />
+        ))}
+      </div>
     </section>
   );
 }
 
-function FolderCard({ project, index, onOpen }) {
-  const strip = stripFor(project.id, project.img);
+// each project = a sticky title bar (stacks on scroll) + its image below
+function ProjectRow({ project, index, onOpen }) {
+  const [hov, setHov] = useState(false);
   return (
-    <div style={{ position: "sticky", top: `calc(120px + ${index * 2}px)`, paddingTop: 24 }}>
-      <div data-label={`View · ${project.title}`} onClick={onOpen}
-        style={{ maxWidth: 1080, margin: "0 auto", background: PAPER, borderRadius: "6px 6px 0 0", overflow: "hidden",
-          border: `1px solid ${BORDER}`, borderBottom: "none", boxShadow: "none", cursor: "pointer" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 22px", borderBottom: `1px solid ${BORDER}` }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 16, minWidth: 0 }}>
-            <span style={{ fontFamily: BODY, fontSize: 10, letterSpacing: ".14em", color: MUTED, whiteSpace: "nowrap" }}>{project.code}</span>
-            <span style={{ fontFamily: HEAD, fontWeight: 500, fontSize: 19, color: INK, letterSpacing: "-.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{project.title}</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 18, flexShrink: 0 }}>
-            <span style={{ fontFamily: BODY, fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: MUTED }}>{project.cat}</span>
-            <span style={{ fontFamily: BODY, fontSize: 10, letterSpacing: ".16em", color: INK }}>{project.year}</span>
-          </div>
+    <>
+      <div onClick={onOpen} data-label={`View · ${project.title}`}
+        onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+        style={{ position: "sticky", top: 56 + index * BAR_H, zIndex: 30, height: BAR_H,
+          display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px",
+          background: PAPER, borderTop: `1px solid ${BORDER}`, cursor: "pointer" }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 14, minWidth: 0 }}>
+          <span style={{ fontFamily: BODY, fontSize: 10, letterSpacing: ".14em", color: MUTED, whiteSpace: "nowrap" }}>{project.code}</span>
+          <span style={{ fontFamily: HEAD, fontWeight: 500, fontSize: 16, color: INK, letterSpacing: "-.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+            borderBottom: hov ? `1px solid ${INK}` : "1px solid transparent", transition: "border-color .2s" }}>{project.title}</span>
         </div>
-        <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", overflow: "hidden", background: project.color }}>
-          <img src={project.img} alt={project.title} loading="lazy"
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-        </div>
-        <div style={{ display: "flex", gap: 8, padding: "12px 22px 16px" }}>
-          {strip.map((src, k) => (
-            <div key={k} style={{ width: 64, height: 40, borderRadius: 2, overflow: "hidden", flexShrink: 0, background: project.color }}>
-              <img src={src} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-            </div>
-          ))}
-          <div style={{ marginLeft: "auto", alignSelf: "center", fontFamily: BODY, fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: MUTED }}>
-            {project.id} / {String(TOTAL).padStart(2, "0")}
-          </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
+          <span style={{ fontFamily: BODY, fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: MUTED }}>{project.cat}</span>
+          <span style={{ fontFamily: BODY, fontSize: 10, letterSpacing: ".16em", color: INK }}>{project.year}</span>
+          <span style={{ fontFamily: BODY, fontSize: 12, color: INK, opacity: hov ? 1 : 0.3, transition: "opacity .2s" }}>↗</span>
         </div>
       </div>
-    </div>
+      <div onClick={onOpen} data-label={`View · ${project.title}`}
+        style={{ position: "relative", zIndex: 1, width: "100%", aspectRatio: "16 / 9", overflow: "hidden",
+          background: project.color, cursor: "pointer", marginBottom: 2 }}>
+        <img src={project.img} alt={project.title} loading="lazy"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      </div>
+    </>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CAPABILITIES — interactive flow field (vector lines swirl around the cursor)
 // ─────────────────────────────────────────────────────────────────────────────
-// interactive dotted globe — auto-spins, drag to rotate, disciplines pinned on it
-const GLOBE_MARKERS = [
-  { label: "UX & Product Design",       lat: 24,  lon: -18 },
-  { label: "Brand Direction",           lat: -6,  lon: 96 },
-  { label: "Social Campaign Creatives", lat: 42,  lon: 186 },
+// skills grouped by discipline, with fixed proficiency values (reveal-on-scroll)
+const SKILLS = [
+  { group: "UX & Product Design", items: [["Product Strategy", 90], ["Wireframing & Prototyping", 95], ["Design Systems", 88], ["User Flows", 92]] },
+  { group: "Brand Direction",     items: [["Visual Identity", 96], ["Logo & Marks", 94], ["Art Direction", 90], ["Guidelines", 85]] },
+  { group: "Social Campaign Creatives", items: [["Content Design", 95], ["Paid Ad Creatives", 92], ["Motion Basics", 78], ["Copy Direction", 82]] },
 ];
 
-function Globe({ isDark }) {
-  const canvasRef = useRef(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    let W = 0, H = 0, dpr = 1, raf;
-
-    // fibonacci sphere
-    const N = 760, pts = [];
-    const inc = Math.PI * (3 - Math.sqrt(5));
-    for (let i = 0; i < N; i++) {
-      const y = 1 - (i / (N - 1)) * 2;
-      const r = Math.sqrt(1 - y * y);
-      const phi = i * inc;
-      pts.push([Math.cos(phi) * r, y, Math.sin(phi) * r]);
-    }
-    const toVec = (lat, lon) => {
-      const la = lat * Math.PI / 180, lo = lon * Math.PI / 180;
-      return [Math.cos(la) * Math.cos(lo), Math.sin(la), Math.cos(la) * Math.sin(lo)];
-    };
-    const markers = GLOBE_MARKERS.map(m => ({ label: m.label, v: toVec(m.lat, m.lon) }));
-
-    let rotY = 0, rotX = -0.35, velY = 0.0024, velX = 0;
-    const drag = { on: false, px: 0, py: 0 };
-
-    const resize = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      W = canvas.clientWidth; H = canvas.clientHeight;
-      canvas.width = W * dpr; canvas.height = H * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    const down = e => { drag.on = true; drag.px = e.clientX; drag.py = e.clientY; canvas.style.cursor = "grabbing"; };
-    const up = () => { drag.on = false; canvas.style.cursor = "grab"; };
-    const mv = e => {
-      if (!drag.on) return;
-      const dx = e.clientX - drag.px, dy = e.clientY - drag.py;
-      drag.px = e.clientX; drag.py = e.clientY;
-      rotY += dx * 0.006; rotX += dy * 0.006;
-      rotX = Math.max(-1.2, Math.min(1.2, rotX));
-      velY = dx * 0.006; velX = dy * 0.002;
-    };
-    canvas.addEventListener("pointerdown", down);
-    window.addEventListener("pointerup", up);
-    window.addEventListener("pointermove", mv);
-
-    const project = (p) => {
-      const cY = Math.cos(rotY), sY = Math.sin(rotY);
-      const x = p[0] * cY + p[2] * sY;
-      const z = -p[0] * sY + p[2] * cY;
-      const cX = Math.cos(rotX), sX = Math.sin(rotX);
-      return [x, p[1] * cX - z * sX, p[1] * sX + z * cX];
-    };
-
-    const draw = () => {
-      const ink = isDark ? "240,239,233" : "20,20,15";
-      if (!drag.on) {
-        rotY += velY; rotX += velX;
-        velY += (0.0024 - velY) * 0.03; velX *= 0.93;
-        rotX = Math.max(-1.2, Math.min(1.2, rotX));
-      }
-      ctx.clearRect(0, 0, W, H);
-      const cx = W / 2, cy = H / 2, R = Math.min(W, H) * 0.36;
-
-      for (const p of pts) {
-        const [x, y, z] = project(p);
-        const depth = (z + 1) / 2;
-        ctx.fillStyle = `rgba(${ink},${0.1 + depth * 0.5})`;
-        ctx.beginPath(); ctx.arc(cx + x * R, cy + y * R, 0.6 + depth * 1.7, 0, 7); ctx.fill();
-      }
-
-      ctx.font = `500 12px ${BODY}`; ctx.textBaseline = "middle";
-      for (const m of markers) {
-        const [x, y, z] = project(m.v);
-        if (z < 0.03) continue;
-        const depth = (z + 1) / 2;
-        const sx = cx + x * R, sy = cy + y * R;
-        ctx.fillStyle = `rgba(${ink},${0.55 + depth * 0.45})`;
-        ctx.beginPath(); ctx.arc(sx, sy, 4, 0, 7); ctx.fill();
-        ctx.strokeStyle = `rgba(${ink},${0.35 * depth})`; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.arc(sx, sy, 8, 0, 7); ctx.stroke();
-        ctx.fillStyle = `rgba(${ink},${0.9 * depth})`;
-        ctx.textAlign = x > 0 ? "left" : "right";
-        ctx.fillText(m.label, sx + (x > 0 ? 15 : -15), sy);
-      }
-      raf = requestAnimationFrame(draw);
-    };
-    canvas.style.cursor = "grab";
-    draw();
-    return () => {
-      cancelAnimationFrame(raf); window.removeEventListener("resize", resize);
-      canvas.removeEventListener("pointerdown", down); window.removeEventListener("pointerup", up); window.removeEventListener("pointermove", mv);
-    };
-  }, [isDark]);
-  return <canvas ref={canvasRef} data-label="Drag to spin" style={{ width: "100%", height: "100%", display: "block", touchAction: "none" }} />;
+function SkillBar({ name, value, delay, shown }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} data-label={`${value}% proficiency`}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+        <span style={{ fontFamily: BODY, fontSize: 13, color: INK }}>{name}</span>
+        <span style={{ fontFamily: BODY, fontSize: 11, color: hov ? INK : MUTED, transition: "color .2s" }}>{value}%</span>
+      </div>
+      <div style={{ height: 3, background: BORDER, position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: shown ? `${value}%` : "0%",
+          background: INK, transition: `width 1.1s cubic-bezier(.16,1,.3,1) ${delay}s` }} />
+      </div>
+    </div>
+  );
 }
 
 function FlowField({ isDark }) {
@@ -483,14 +390,33 @@ function FlowField({ isDark }) {
   return <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />;
 }
 
-function Capabilities({ isDark }) {
+function Capabilities() {
+  const [shown, setShown] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setShown(true); obs.disconnect(); } }, { threshold: 0.2 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <section id="services" style={{ background: "transparent", padding: "90px 28px 60px", borderTop: `1px solid ${BORDER}` }}>
+    <section id="services" style={{ background: "transparent", padding: "90px 28px 80px", borderTop: `1px solid ${BORDER}` }}>
       <SectionHead label="(02) What I Do"
-        heading="Everything I do, in orbit."
-        copy="Product, brand and social all live in one system. Grab the globe and spin it to explore the disciplines." />
-      <div style={{ position: "relative", width: "100%", height: "min(70vh, 640px)" }}>
-        <Globe isDark={isDark} />
+        heading="The skills behind the work."
+        copy="Three disciplines, sharpened over years of client work across product, brand and social." />
+      <div ref={ref} style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "48px 40px" }}>
+        {SKILLS.map((g, gi) => (
+          <div key={g.group}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 28, paddingBottom: 14, borderBottom: `1px solid ${BORDER}` }}>
+              <span style={{ fontFamily: BODY, fontSize: 11, letterSpacing: ".16em", color: MUTED }}>0{gi + 1}</span>
+              <h3 style={{ fontFamily: HEAD, fontWeight: 500, fontSize: "clamp(17px,1.5vw,22px)", letterSpacing: "-.01em", color: INK }}>{g.group}</h3>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              {g.items.map(([name, val], ii) => (
+                <SkillBar key={name} name={name} value={val} shown={shown} delay={gi * 0.12 + ii * 0.08} />
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -699,7 +625,7 @@ export default function App() {
             <main>
               <Hero ready={ready} isDark={isDark} />
               <WorkSection onOpen={openProject} />
-              <Capabilities isDark={isDark} />
+              <Capabilities />
               <About />
               <ContactFooter />
             </main>
