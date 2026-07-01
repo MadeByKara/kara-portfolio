@@ -22,40 +22,44 @@ const ink = (a) => `rgb(var(--ink-rgb) / ${a})`;
 const PROJECTS = [
   { id:"01", code:"PSA-0126", title:"Social Media & Ads",      cat:"Social Media",   year:"2026", color:"#e8c4d4",
     url:"https://madebykara.com/30-commerical-social-media-posts-ads",
-    img:"https://cdn.myportfolio.com/48d87636-31af-478b-bbcf-604c0dbbcc71/3d0601ff-4c96-4952-bf86-d55966d453ea_rwc_0x0x1916x1080x32.jpg?h=3fe224854a35b94dfa215defd4a0a770",
+    img:"/images/social%20media%20creatives/Thumbnail%20Website.jpg",
     desc:"30+ commercial posts and paid ads across multiple brands. Scroll stopping visuals built for conversion and engagement." },
   { id:"02", code:"PPL-0925", title:"Parallels Logo",           cat:"Logo Design",    year:"2025", color:"#c4cce8",
     url:"https://madebykara.com/parallels-logo-variations",
-    img:"https://cdn.myportfolio.com/48d87636-31af-478b-bbcf-604c0dbbcc71/65bdc620-9a44-454d-a983-75011a208ff8_carw_16x9x32.png?h=5fdc5566882bdb9cbf12c41de95ee4fa",
+    img:"/images/parallels/logo-variations-parallels.png",
     desc:"Full suite of logo variations for Parallels. A mark that works across every scale, surface, and context." },
   { id:"03", code:"PCC-0725", title:"CoinCooker Identity",      cat:"Logo Design",    year:"2025", color:"#e8d4a0",
     url:"https://madebykara.com/coincooker-brand-logo",
-    img:"https://cdn.myportfolio.com/48d87636-31af-478b-bbcf-604c0dbbcc71/9adf83bd-e491-4c3e-aeb2-051b68c98a9e_rwc_118x30x1136x640x32.png?h=38831906379b60356e9d8b51990a2566",
+    img:"/images/coincooker/Slide%2016_9%20-%2039.png",
     desc:"Brand mark for a crypto launchpad, bridging financial authority with digital native edge for the BRC2.0 ecosystem." },
   { id:"04", code:"PBC-0525", title:"Brand Craft Profile",      cat:"Brand Identity", year:"2025", color:"#2a2a2a",
     url:"https://madebykara.com/brand-craft-company-profile",
-    img:"https://cdn.myportfolio.com/48d87636-31af-478b-bbcf-604c0dbbcc71/c0c20ce8-f1e4-4f21-89fb-220df83ca108_rwc_0x300x3000x1690x32.jpg?h=81f8c200fe1b1ac45540bcf506e80da4",
+    img:"/images/brand-craft/front.webp",
     desc:"Company profile design for Brand Craft. A complete document system, from cover to case study layout." },
   { id:"05", code:"PKA-1024", title:"KARA Personal Identity",   cat:"Brand Identity", year:"2024", color:"#1a1830",
     url:"https://madebykara.com/kara-personal-identity",
-    img:"https://cdn.myportfolio.com/48d87636-31af-478b-bbcf-604c0dbbcc71/a45082ca-e836-4e80-83bb-efa025d05e3a_carw_16x9x32.png?h=bcb30c74439a5628036647126ffc3799",
+    img:"/images/kara/Thumbnail%20extended.png",
     desc:"My own personal brand, KARA. Built around the idea of visual deliverance: being the audience before being the designer." },
   { id:"06", code:"PGS-0424", title:"Greenstone Rebrand",       cat:"Rebranding",     year:"2024", color:"#b0c8b8",
     url:"https://madebykara.com/greenstone-rebranded-logo-concept",
-    img:"https://cdn.myportfolio.com/48d87636-31af-478b-bbcf-604c0dbbcc71/4e82acfe-772a-4f7e-9569-cedeefc667e8_carw_16x9x32.jpg?h=72d94923862b357e473f864b0eec314f",
+    img:"/images/greenstone/Thumbnail-100.jpg",
     desc:"Conceptual rebrand for Greenstone. Preserving equity while modernising the mark for a new market position." },
   { id:"07", code:"PSC-0324", title:"Stygian Crypt Vol. 1",     cat:"Art Direction",  year:"2024", color:"#1a0a2e",
     url:"https://madebykara.com/the-stygian-crypt-vol-1-artwork-showcase",
-    img:"https://cdn.myportfolio.com/48d87636-31af-478b-bbcf-604c0dbbcc71/03091f41-0cb5-4eca-8dc4-4a867a5957dd_carw_16x9x32.jpg?h=fbcb98b93227964d12c9108c573b8bf0",
+    img:"/images/stygian-crypt/Mockup%201.jpg",
     desc:"Art direction for Stygian Crypt Vol. 1, a dark fantasy visual system exploring mythology through editorial design." },
   { id:"08", code:"PAR-0323", title:"Analog The Room Rebrand",  cat:"Rebranding",     year:"2023", color:"#c0b8d4",
     url:"https://madebykara.com/analog-the-room-rebranding-student-project",
-    img:"https://cdn.myportfolio.com/48d87636-31af-478b-bbcf-604c0dbbcc71/cd54306d-138c-4354-bf2c-421488547f2b_carw_16x9x32.jpg?h=aff9bd3347f40532b8c96aceb6f2d911",
+    img:"/images/analog-the-room/ATR%20Behance%20Post.jpg",
     desc:"Rebrand for Analog The Room, a hospitality venue. Retained the analogue soul while carving a sharper visual identity." },
   { id:"09", code:"PME-0525", title:"Maison Etherique",         cat:"Brand Identity", year:"2025", color:"#c9b79c",
     url:"https://madebykara.com",
-    img:"/images/maison%20etherique/Love_and_Harmony_kits.webp",
+    img:"/images/maison%20etherique/Home-Blessing-Kit-Dubai-Maison-Etherique.webp",
     desc:"Brand identity and packaging for Maison Etherique, a Dubai incense and ritual house. Sacred materials translated into a calm, modern luxury system." },
+  { id:"10", code:"PTB-0126", title:"Tabby UI Redesign",        cat:"UI/UX Design",   year:"2026", color:"#bfe3d8",
+    url:"https://madebykara.com",
+    img:"/images/tabby%20ui%20redesign/06-mockup-screen.png",
+    desc:"A concept redesign of the Tabby app. Rethinking the buy now pay later flow with a cleaner visual system, clearer hierarchy and a calmer interface." },
 ];
 const TOTAL = PROJECTS.length;
 
@@ -181,7 +185,7 @@ function Hero({ ready, isDark }) {
     <span style={{ display: "block", overflow: "hidden" }}>
       <span style={{
         display: "block", fontFamily: HEAD, fontWeight: 600,
-        fontSize: "clamp(34px,5vw,82px)", lineHeight: 1.02, letterSpacing: "-.03em", color: INK,
+        fontSize: "clamp(40px,7vw,108px)", lineHeight: 1.0, letterSpacing: "-.03em", color: INK,
         transform: ready ? "translateY(0)" : "translateY(110%)",
         transition: `transform .9s cubic-bezier(.16,1,.3,1) ${delay}s`,
       }}>{children}</span>
@@ -189,49 +193,44 @@ function Hero({ ready, isDark }) {
   );
   return (
     <section id="top" style={{
-      height: "100vh", minHeight: 620, background: BG, position: "relative",
-      display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "100%", gap: 40,
-      padding: "0 28px", borderBottom: `1px solid ${BORDER}`,
+      height: "100vh", minHeight: 640, background: "transparent", position: "relative",
+      display: "flex", flexDirection: "column", justifyContent: "flex-end",
+      padding: "0 28px 44px", borderBottom: `1px solid ${BORDER}`,
     }}>
-      <div style={{ display: "flex", alignItems: "center", paddingTop: 64, paddingBottom: 44 }}>
-        <img src={isDark ? "/images/logo/kara-white-logo.svg" : "/images/logo/kara-black-logo.svg"} alt="KARA"
-          style={{ width: "min(46vw, 660px)", display: "block",
-            opacity: ready ? 1 : 0, transform: ready ? "translateY(0)" : "translateY(14px)",
-            transition: "opacity 1s ease .2s, transform 1s cubic-bezier(.16,1,.3,1) .2s" }} />
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", paddingTop: 96, paddingBottom: 44 }}>
-        <p style={{ fontFamily: BODY, fontSize: 14, lineHeight: 1.65, color: ink(0.6), maxWidth: 360,
-          opacity: ready ? 1 : 0, transform: ready ? "translateY(0)" : "translateY(10px)",
-          transition: "opacity .8s ease .3s, transform .8s ease .3s" }}>
-          Some say a logo is enough. KARA is a brand studio that believes the audience comes first, always.
-        </p>
-        <div>
-          <div style={{ marginBottom: 36 }}>
-            <Clip delay={0.5}>Be the audience.</Clip>
-            <Clip delay={0.62}>Build the brand.</Clip>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 20,
-            opacity: ready ? 1 : 0, transition: "opacity .8s ease 1.1s" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#3a7d44", display: "block",
-                boxShadow: "0 0 0 0 rgba(58,125,68,.5)", animation: "pulse 2.4s infinite" }} />
-              <span style={{ fontFamily: BODY, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: INK }}>
-                Available for work
-              </span>
-            </div>
-            <p style={{ fontFamily: BODY, fontSize: 12, lineHeight: 1.6, color: MUTED, maxWidth: 260 }}>
-              Building brands that say something across FMCG, lifestyle, hospitality and tech.
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* big logo — top right */}
+      <img src={isDark ? "/images/logo/kara-white-logo.svg" : "/images/logo/kara-black-logo.svg"} alt="KARA"
+        style={{ position: "absolute", top: 72, right: 28, width: "min(34vw, 460px)", display: "block",
+          opacity: ready ? 1 : 0, transform: ready ? "translateY(0)" : "translateY(14px)",
+          transition: "opacity 1s ease .2s, transform 1s cubic-bezier(.16,1,.3,1) .2s" }} />
+
+      {/* top-left label */}
       <div style={{ position: "absolute", top: 30, left: 28, opacity: ready ? 1 : 0, transition: "opacity .7s ease .4s",
         fontFamily: BODY, fontSize: 10, letterSpacing: ".2em", textTransform: "uppercase", color: MUTED }}>
         Brand &amp; Creative Designer · Dubai
       </div>
-      <div style={{ position: "absolute", top: 30, right: 28, opacity: ready ? 1 : 0, transition: "opacity .7s ease .4s",
-        fontFamily: BODY, fontSize: 10, letterSpacing: ".2em", textTransform: "uppercase", color: MUTED }}>
-        Est. 2023 · Portfolio {String(TOTAL).padStart(2, "0")}
+
+      {/* bottom-left content */}
+      <p style={{ fontFamily: BODY, fontSize: 14, lineHeight: 1.65, color: ink(0.6), maxWidth: 400, marginBottom: 30,
+        opacity: ready ? 1 : 0, transform: ready ? "translateY(0)" : "translateY(10px)",
+        transition: "opacity .8s ease .3s, transform .8s ease .3s" }}>
+        Some say a logo is enough. KARA is a brand studio that believes the audience comes first, always.
+      </p>
+      <div>
+        <Clip delay={0.5}>Be the audience.</Clip>
+        <Clip delay={0.62}>Build the brand.</Clip>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 20, marginTop: 34,
+        opacity: ready ? 1 : 0, transition: "opacity .8s ease 1.1s" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#3a7d44", display: "block",
+            boxShadow: "0 0 0 0 rgba(58,125,68,.5)", animation: "pulse 2.4s infinite" }} />
+          <span style={{ fontFamily: BODY, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: INK }}>
+            Available for work
+          </span>
+        </div>
+        <p style={{ fontFamily: BODY, fontSize: 12, lineHeight: 1.6, color: MUTED, maxWidth: 300 }}>
+          Building brands that say something across FMCG, lifestyle, hospitality and tech.
+        </p>
       </div>
     </section>
   );
@@ -259,7 +258,7 @@ function SectionHead({ label, heading, copy }) {
 // ─────────────────────────────────────────────────────────────────────────────
 function WorkSection({ onOpen }) {
   return (
-    <section id="work" style={{ padding: "90px 28px 80px", background: BG }}>
+    <section id="work" style={{ padding: "90px 28px 80px", background: "transparent" }}>
       <SectionHead label="(01) Selected Work" heading="Nine projects, built to last."
         copy="A working archive of brand identities, art direction and digital design, spanning 2023 to 2026." />
       <div style={{ height: 52, display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -287,7 +286,7 @@ function FolderCard({ project, index, onOpen }) {
     <div ref={innerRef} style={{ position: "sticky", top: `calc(120px + ${index * 2}px)`, paddingTop: 24 }}>
       <div data-label={`View · ${project.title}`} onClick={onOpen}
         style={{ background: PAPER, borderRadius: "6px 6px 0 0", overflow: "hidden",
-          border: `1px solid ${BORDER}`, borderBottom: "none", boxShadow: "0 -8px 40px rgb(var(--ink-rgb) / 0.06)",
+          border: `1px solid ${BORDER}`, borderBottom: "none", boxShadow: "none",
           transform: vis ? "translateY(0)" : "translateY(60px)", opacity: vis ? 1 : 0,
           transition: "transform .9s cubic-bezier(.16,1,.3,1), opacity .9s ease", cursor: "pointer" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 22px", borderBottom: `1px solid ${BORDER}` }}>
@@ -386,14 +385,13 @@ function FlowField({ isDark }) {
   return <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />;
 }
 
-function Capabilities({ isDark }) {
+function Capabilities() {
   return (
-    <section id="services" style={{ background: BG, padding: "90px 28px 60px", borderTop: `1px solid ${BORDER}` }}>
+    <section id="services" style={{ background: "transparent", padding: "90px 28px 60px", borderTop: `1px solid ${BORDER}` }}>
       <SectionHead label="(02) What I Do"
         heading="One studio, every layer of the brand."
-        copy="Identity, art direction, digital and strategy all pull toward one centre. Sweep your cursor through the field to stir it." />
+        copy="Identity, art direction, digital and strategy all pull toward one centre. Sweep your cursor across the page to stir the field." />
       <div style={{ position: "relative", width: "100%", height: "min(66vh, 640px)" }}>
-        <FlowField isDark={isDark} />
         {DISCIPLINES.map((d) => (
           <div key={d.t} style={{ position: "absolute", left: `${d.x * 100}%`, top: `${d.y * 100}%`, transform: "translate(-50%,-50%)",
             display: "flex", alignItems: "center", gap: 8, pointerEvents: "none" }}>
@@ -413,7 +411,7 @@ function About() {
   const stats = [["2+", "Years freelance"], [String(TOTAL), "Projects"], ["4", "Industries"], ["BA", "MDX Dubai"]];
   const tags = ["Brand Identity", "Art Direction", "Logo Design", "Social Media", "Rebranding", "Strategy"];
   return (
-    <section id="about" style={{ background: BG, padding: "90px 28px 100px", borderTop: `1px solid ${BORDER}` }}>
+    <section id="about" style={{ background: "transparent", padding: "90px 28px 100px", borderTop: `1px solid ${BORDER}` }}>
       <SectionHead label="(03) About" heading="I design brands that say something, not just look the part." />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40 }}>
         <div />
@@ -600,15 +598,21 @@ export default function App() {
         <ProjectPage project={PROJECTS[projectPage]} onBack={closeProject} onPrev={prevProject} onNext={nextProject} totalProjects={TOTAL} isDark={isDark} />
       ) : (
         <>
-          <Nav isDark={isDark} onToggleTheme={toggleTheme} />
-          <main>
-            <Hero ready={ready} isDark={isDark} />
-            <WorkSection onOpen={openProject} />
-            <Capabilities isDark={isDark} />
-            <About />
-            <ContactFooter />
-          </main>
-          <SkipToContact />
+          {/* ambient interactive field behind the whole page */}
+          <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 0, opacity: 0.3, pointerEvents: "none" }}>
+            <FlowField isDark={isDark} />
+          </div>
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <Nav isDark={isDark} onToggleTheme={toggleTheme} />
+            <main>
+              <Hero ready={ready} isDark={isDark} />
+              <WorkSection onOpen={openProject} />
+              <Capabilities />
+              <About />
+              <ContactFooter />
+            </main>
+            <SkipToContact />
+          </div>
         </>
       )}
     </div>

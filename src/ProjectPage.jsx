@@ -232,244 +232,118 @@ export const PROJECT_IMAGES = {
     "/images/maison%20etherique/Home-Blessing-Kit-Dubai-Maison-Etherique.webp",
     "/images/maison%20etherique/Palo-Santo-Bagg-of-5-Sticks-Dubai.webp",
   ],
+  // 10 — Tabby UI Redesign
+  "10": [
+    "/images/tabby%20ui%20redesign/01-problem-statement.png",
+    "/images/tabby%20ui%20redesign/02-design-foundation.png",
+    "/images/tabby%20ui%20redesign/03-design-foundation-idea.png",
+    "/images/tabby%20ui%20redesign/04-context.png",
+    "/images/tabby%20ui%20redesign/05-project-breakdown.png",
+    "/images/tabby%20ui%20redesign/06-mockup-screen.png",
+    "/images/tabby%20ui%20redesign/07-scene-1.png",
+    "/images/tabby%20ui%20redesign/08-scene-10.png",
+    "/images/tabby%20ui%20redesign/09-lifestyle-mockups.png",
+    "/images/tabby%20ui%20redesign/10-frame.png",
+    "/images/tabby%20ui%20redesign/11-billboard.png",
+    "/images/tabby%20ui%20redesign/12-discover.png",
+    "/images/tabby%20ui%20redesign/13-end-frame.png",
+  ],
 };
 
 // ── COMPONENT ─────────────────────────────────────────────────────────────────
 export default function ProjectPage({ project, onBack, onNext, onPrev, totalProjects }) {
   const images = PROJECT_IMAGES[project.id] || [project.img];
-  const [activeImg, setActiveImg] = useState(0);
-  const imgRefs = useRef([]);
-  const scrollRef = useRef(null);
-
-  // track which image is in view as user scrolls center column
-  useEffect(() => {
-    const obs = new IntersectionObserver(
-      entries => {
-        entries.forEach(e => {
-          if (e.isIntersecting && e.intersectionRatio > 0.5) {
-            setActiveImg(parseInt(e.target.dataset.idx));
-          }
-        });
-      },
-      { threshold: 0.1, rootMargin: "0px 0px -30% 0px" }
-    );
-    imgRefs.current.forEach(el => el && obs.observe(el));
-    return () => obs.disconnect();
-  }, [images.length]);
-
-  // scroll to top on project change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
-    setActiveImg(0);
   }, [project.id]);
 
-  const lbl = {
-    fontFamily: F_SANS,
-    fontWeight: 400,
-    fontSize: 9,
-    letterSpacing: ".26em",
-    textTransform: "uppercase",
-  };
+  const lbl = { fontFamily: F_SANS, fontWeight: 500, fontSize: 10, letterSpacing: ".18em", textTransform: "uppercase" };
+
+  const meta = [["Year", project.year], ["Category", project.cat], ["Views", `${images.length} images`]];
 
   return (
-    <div style={{ background: BG }}>
-
-      {/* ── NAV (same as main site) ── */}
+    <div style={{ background: BG, minHeight: "100vh", color: INK }}>
+      {/* top bar — matches the home nav */}
       <div style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 500,
-        height: NAV_H,
-        display: "grid",
-        gridTemplateColumns: `${RAIL}px 1fr ${RAIL}px`,
-        borderBottom: `1px solid ${BORDER}`,
-        background: BG,
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 500, height: 56,
+        display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px",
+        borderBottom: `1px solid ${BORDER}`, background: "rgb(var(--bg-rgb) / 0.82)", backdropFilter: "blur(12px)",
       }}>
-        <div style={{ borderRight: `1px solid ${BORDER}`, display: "flex", alignItems: "center", padding: "0 24px" }}>
-          <button
-            onClick={onBack}
-            style={{ fontFamily: F_SANS, fontWeight: 600, fontSize: 12, letterSpacing: ".08em", textTransform: "uppercase", color: INK, background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", gap: 8 }}
-            onMouseEnter={e => e.currentTarget.style.opacity = ".6"}
-            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-          >
-            ← <img src="/images/logo/kara-black-logo.svg" alt="KARA" style={{ height: 14, display: "inline-block", verticalAlign: "middle" }} />
-          </button>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ ...lbl, color: MUTED }}>
-            {project.id} / {String(totalProjects).padStart(2, "0")} · {project.cat}
-          </span>
-        </div>
-        <div style={{ borderLeft: `1px solid ${BORDER}`, display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 24px", gap: 20 }}>
-          <button onClick={onPrev} style={{ ...lbl, color: MUTED, background: "none", border: "none", cursor: "pointer", transition: "color .2s" }} onMouseEnter={e => e.currentTarget.style.color = INK} onMouseLeave={e => e.currentTarget.style.color = MUTED}>←</button>
-          <button onClick={onNext} style={{ ...lbl, color: MUTED, background: "none", border: "none", cursor: "pointer", transition: "color .2s" }} onMouseEnter={e => e.currentTarget.style.color = INK} onMouseLeave={e => e.currentTarget.style.color = MUTED}>→</button>
+        <button onClick={onBack} data-label="All work"
+          style={{ ...lbl, color: INK, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 14 }}>←</span> All Work
+        </button>
+        <span style={{ ...lbl, color: MUTED }}>{project.id} / {String(totalProjects).padStart(2, "0")} · {project.cat}</span>
+        <div style={{ display: "flex", gap: 20 }}>
+          <button onClick={onPrev} data-label="Previous project" style={{ ...lbl, color: MUTED, background: "none", border: "none", cursor: "pointer", transition: "color .2s" }} onMouseEnter={e => e.currentTarget.style.color = INK} onMouseLeave={e => e.currentTarget.style.color = MUTED}>Prev</button>
+          <button onClick={onNext} data-label="Next project" style={{ ...lbl, color: INK, background: "none", border: "none", cursor: "pointer" }}>Next →</button>
         </div>
       </div>
 
-      {/* ── LEFT RAIL ── */}
-      <div style={{
-        position: "fixed", top: NAV_H, left: 0, bottom: 0, width: RAIL,
-        borderRight: `1px solid ${BORDER}`,
-        display: "flex", flexDirection: "column", justifyContent: "space-between",
-        padding: "36px 24px", zIndex: 400, background: BG, pointerEvents: "none",
-      }}>
-        <div>
-          <p style={{ ...lbl, color: MUTED, marginBottom: 20, opacity: .55 }}>{project.id} / {totalProjects}</p>
-          <h1 style={{
-            fontFamily: F_SERIF, fontStyle: "normal", fontWeight: 400,
-            fontSize: "clamp(20px,1.8vw,32px)", lineHeight: 1.15,
-            color: INK, margin: 0, letterSpacing: "-.01em",
-            whiteSpace: "pre-line",
-          }}>
-            {project.title}
-          </h1>
-        </div>
-        {/* Image counter dots */}
-        <div>
-          <p style={{ ...lbl, color: MUTED, marginBottom: 14, opacity: .45 }}>
-            {String(activeImg + 1).padStart(2, "0")} / {String(images.length).padStart(2, "0")}
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {images.map((_, i) => (
-              <div
-                key={i}
-                style={{
-                  height: i === activeImg ? 24 : 6,
-                  width: 2,
-                  background: i === activeImg ? INK : MUTED,
-                  transition: "height .35s cubic-bezier(.16,1,.3,1), background .2s",
-                  borderRadius: 1,
-                }}
-              />
-            ))}
+      <main style={{ paddingTop: 56 }}>
+        {/* editorial header (2 columns) */}
+        <div style={{ padding: "72px 28px 44px", borderBottom: `1px solid ${BORDER}` }}>
+          <div style={{ fontFamily: F_SANS, fontSize: 11, letterSpacing: ".2em", textTransform: "uppercase", color: MUTED, marginBottom: 26 }}>
+            {project.code} · Project {project.id} of {String(totalProjects).padStart(2, "0")}
           </div>
-        </div>
-      </div>
-
-      {/* ── RIGHT RAIL ── */}
-      <div style={{
-        position: "fixed", top: NAV_H, right: 0, bottom: 0, width: RAIL,
-        borderLeft: `1px solid ${BORDER}`,
-        display: "flex", flexDirection: "column", justifyContent: "space-between",
-        padding: "36px 24px", zIndex: 400, background: BG, pointerEvents: "none",
-        overflowY: "auto",
-      }}>
-        <div>
-          <p style={{ ...lbl, color: MUTED, marginBottom: 16, opacity: .55 }}>{project.cat}</p>
-          <p style={{ fontFamily: F_SANS, fontWeight: 400, fontSize: 11.5, lineHeight: 1.8, color: MUTED }}>
-            {project.desc}
-          </p>
-
-          {/* Divider */}
-          <div style={{ height: 1, background: BORDER, margin: "24px 0" }} />
-
-          {/* Meta */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {[["Year", project.year], ["Category", project.cat], ["Images", `${images.length} views`]].map(([k, v]) => (
-              <div key={k}>
-                <p style={{ ...lbl, color: MUTED, opacity: .45, marginBottom: 2 }}>{k}</p>
-                <p style={{ fontFamily: F_SANS, fontWeight: 400, fontSize: 11, color: INK }}>{v}</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, alignItems: "end" }}>
+            <h1 style={{ fontFamily: F_SERIF, fontWeight: 600, fontSize: "clamp(34px,5vw,76px)", lineHeight: 1.0, letterSpacing: "-.03em", color: INK }}>
+              {project.title}
+            </h1>
+            <div>
+              <p style={{ fontFamily: F_SANS, fontSize: 14, lineHeight: 1.75, color: "rgb(var(--ink-rgb) / 0.62)", marginBottom: 26, maxWidth: 460 }}>
+                {project.desc}
+              </p>
+              <div style={{ display: "flex", gap: 34, flexWrap: "wrap", alignItems: "flex-end" }}>
+                {meta.map(([k, v]) => (
+                  <div key={k}>
+                    <div style={{ ...lbl, fontSize: 9, color: MUTED, marginBottom: 6 }}>{k}</div>
+                    <div style={{ fontFamily: F_SANS, fontSize: 13, color: INK }}>{v}</div>
+                  </div>
+                ))}
+                <a href={project.url} target="_blank" rel="noreferrer" data-label="Open live site"
+                  style={{ ...lbl, fontSize: 10, color: INK, textDecoration: "none", borderBottom: `1px solid ${INK}`, paddingBottom: 2 }}>
+                  View on Site ↗
+                </a>
               </div>
-            ))}
+            </div>
           </div>
-
-          {/* Divider */}
-          <div style={{ height: 1, background: BORDER, margin: "24px 0" }} />
-
-          {/* External link — pointer events on since this is clickable */}
-          <a
-            href={project.url}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              fontFamily: F_SANS, fontWeight: 500, fontSize: 10,
-              letterSpacing: ".16em", textTransform: "uppercase",
-              color: INK, textDecoration: "none",
-              display: "flex", alignItems: "center", gap: 8,
-              borderBottom: `1px solid ${BORDER}`, paddingBottom: 1,
-              pointerEvents: "all",
-              transition: "opacity .2s",
-            }}
-            onMouseEnter={e => e.currentTarget.style.opacity = ".5"}
-            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-          >
-            View on Site ↗
-          </a>
         </div>
 
-        {/* Bottom nav hint */}
-        <div>
-          <p style={{ ...lbl, color: MUTED, opacity: .35 }}>← → to browse projects</p>
-        </div>
-      </div>
-
-      {/* ── CENTER — mosaic grid ── */}
-      <main style={{ marginLeft: RAIL, marginRight: RAIL, paddingTop: NAV_H }} ref={scrollRef}>
-
-        {/* Header strip */}
-        <div style={{
-          height: 44,
-          borderBottom: `1px solid ${BORDER}`,
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "0 48px", background: BG,
-        }}>
-          <span style={{ ...lbl, color: MUTED }}>Project Detail</span>
-          <span style={{ fontFamily: F_SERIF, fontStyle: "normal", fontSize: 12, color: MUTED }}>
-            {images.length} image{images.length !== 1 ? "s" : ""}
-          </span>
-        </div>
-
-        {/* Mosaic grid — 2 columns, natural aspect ratios */}
-        <div style={{ padding: "40px 48px 56px", columns: 2, columnGap: 16 }}>
+        {/* masonry gallery */}
+        <div style={{ padding: "28px 28px 40px", columns: 2, columnGap: 20 }}>
           {images.map((src, i) => (
-            <ProjectImage key={i} src={src} idx={i} imgRef={el => imgRefs.current[i] = el} total={images.length} />
+            <ProjectImage key={i} src={src} idx={i} />
           ))}
         </div>
 
-        {/* ── NEXT PROJECT TEASER ── */}
-        <div style={{ borderTop: `1px solid ${BORDER}`, background: BG }}>
-          <div style={{
-            padding: "56px 36px 72px",
-            display: "flex", justifyContent: "space-between", alignItems: "flex-end",
-          }}>
-            <div>
-              <p style={{ ...lbl, color: MUTED, marginBottom: 12 }}>Next Project</p>
-              <button
-                onClick={onNext}
-                style={{
-                  fontFamily: F_SERIF, fontStyle: "normal", fontWeight: 400,
-                  fontSize: "clamp(28px,3.5vw,52px)", color: INK,
-                  background: "none", border: "none", cursor: "pointer", padding: 0,
-                  letterSpacing: "-.01em", lineHeight: 1, textAlign: "left",
-                  transition: "opacity .2s",
-                }}
-                onMouseEnter={e => e.currentTarget.style.opacity = ".5"}
-                onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-              >
-                Continue →
-              </button>
-            </div>
-            <button
-              onClick={onBack}
-              style={{
-                fontFamily: F_SANS, fontWeight: 400, fontSize: 10,
-                letterSpacing: ".16em", textTransform: "uppercase",
-                color: MUTED, background: "none", border: `1px solid ${BORDER}`,
-                padding: "10px 20px", cursor: "pointer", transition: "all .2s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = INK; e.currentTarget.style.color = INK; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = MUTED; }}
-            >
-              ← All Work
+        {/* next project CTA */}
+        <div style={{ borderTop: `1px solid ${BORDER}`, padding: "72px 28px 96px",
+          display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 24 }}>
+          <div>
+            <div style={{ ...lbl, fontSize: 10, color: MUTED, marginBottom: 14 }}>Next Project</div>
+            <button onClick={onNext} data-label="Next project"
+              style={{ fontFamily: F_SERIF, fontWeight: 600, fontSize: "clamp(30px,4.4vw,64px)", letterSpacing: "-.02em",
+                color: INK, background: "none", border: "none", cursor: "pointer", lineHeight: 1, padding: 0, transition: "opacity .2s" }}
+              onMouseEnter={e => e.currentTarget.style.opacity = ".55"} onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+              Continue →
             </button>
           </div>
+          <button onClick={onBack} data-label="All work"
+            style={{ fontFamily: F_SANS, fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase",
+              color: MUTED, background: "none", border: `1px solid ${BORDER}`, padding: "12px 22px", cursor: "pointer", transition: "all .2s" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = INK; e.currentTarget.style.color = INK; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = MUTED; }}>
+            ← Back to all work
+          </button>
         </div>
-
       </main>
     </div>
   );
 }
 
 // ── MOSAIC TILE ───────────────────────────────────────────────────────────────
-function ProjectImage({ src, idx, imgRef }) {
+function ProjectImage({ src, idx }) {
   const [vis, setVis] = useState(false);
   const ref = useRef(null);
 
@@ -482,12 +356,9 @@ function ProjectImage({ src, idx, imgRef }) {
     return () => obs.disconnect();
   }, []);
 
-  const setRefs = el => { ref.current = el; if (imgRef) imgRef(el); };
-
   return (
     <div
-      ref={setRefs}
-      data-idx={idx}
+      ref={ref}
       style={{
         breakInside: "avoid",
         marginBottom: 16,
