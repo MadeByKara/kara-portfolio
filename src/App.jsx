@@ -468,9 +468,36 @@ function FlowField({ isDark }) {
   return <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />;
 }
 
+// interactive flow field of lines that swirl around the cursor
+const DISCIPLINES = [
+  { t: "UX & Product Design",       x: 0.22, y: 0.30 },
+  { t: "Brand Direction",           x: 0.72, y: 0.24 },
+  { t: "Social Campaign Creatives", x: 0.50, y: 0.72 },
+];
+
+function Capabilities({ isDark }) {
+  return (
+    <section id="capabilities" style={{ background: "transparent", padding: "80px 28px 60px", borderTop: `1px solid ${BORDER}` }}>
+      <SectionHead label="(02) What I Do"
+        heading="Everything connects to one system."
+        copy="Product, brand and social all pull toward one centre. Sweep your cursor through the field to stir it." />
+      <div style={{ position: "relative", width: "100%", height: "min(66vh, 600px)" }}>
+        <FlowField isDark={isDark} />
+        {DISCIPLINES.map((d) => (
+          <div key={d.t} style={{ position: "absolute", left: `${d.x * 100}%`, top: `${d.y * 100}%`, transform: "translate(-50%,-50%)",
+            display: "flex", alignItems: "center", gap: 8, pointerEvents: "none" }}>
+            <span style={{ width: 7, height: 7, background: INK, display: "block" }} />
+            <span style={{ fontFamily: HEAD, fontWeight: 500, fontSize: "clamp(15px,1.5vw,22px)", color: INK, letterSpacing: "-.01em", whiteSpace: "nowrap" }}>{d.t}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function ToolsSection({ isDark }) {
   return (
-    <section id="services" style={{ background: "transparent", padding: "80px 28px 90px", borderTop: `1px solid ${BORDER}` }}>
+    <section id="tools" style={{ background: "transparent", padding: "80px 28px 90px", borderTop: `1px solid ${BORDER}` }}>
       <SectionHead label="Tools I Use"
         heading="The stack I build with every day."
         copy="Design, code and AI in one workflow. Grab any tool and toss it around, they bounce off each other." />
@@ -613,8 +640,17 @@ function usePage() {
   return [page, go];
 }
 
-function HomePage({ ready, isDark }) {
-  return (<><Hero ready={ready} isDark={isDark} /><ToolsSection isDark={isDark} /></>);
+function HomePage({ ready, isDark, onOpen, onNav }) {
+  return (
+    <>
+      <Hero ready={ready} isDark={isDark} />
+      <WorkSection onOpen={onOpen} />
+      <Capabilities isDark={isDark} />
+      <ToolsSection isDark={isDark} />
+      <About />
+      <ContactFooter onNav={onNav} />
+    </>
+  );
 }
 
 function SiteFooter({ onNav }) {
@@ -656,7 +692,7 @@ export default function App() {
   const toggleTheme  = useCallback(() => setIsDark(v => !v), []);
   const navigate     = useCallback((p) => { setProjectPage(null); go(p); }, [go]);
 
-  const detail = page === "work" && projectPage !== null;
+  const detail = projectPage !== null;
 
   return (
     <div className={isDark ? "theme-dark" : "theme-light"} style={{ background: BG, color: INK, minHeight: "100vh", transition: "background-color .4s ease, color .4s ease" }}>
@@ -678,9 +714,6 @@ export default function App() {
       `}</style>
 
       <CursorLabel />
-      <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 0, opacity: 0.3, pointerEvents: "none" }}>
-        <FlowField isDark={isDark} />
-      </div>
 
       <div style={{ position: "relative", zIndex: 1 }}>
         {detail ? (
@@ -693,10 +726,10 @@ export default function App() {
                 {page === "work" ? <WorkSection onOpen={openProject} />
                   : page === "about" ? <About />
                   : page === "contact" ? <ContactFooter onNav={navigate} />
-                  : <HomePage ready={ready} isDark={isDark} />}
+                  : <HomePage ready={ready} isDark={isDark} onOpen={openProject} onNav={navigate} />}
               </div>
             </main>
-            {page !== "contact" && <SiteFooter onNav={navigate} />}
+            {page !== "contact" && page !== "home" && <SiteFooter onNav={navigate} />}
           </>
         )}
       </div>
