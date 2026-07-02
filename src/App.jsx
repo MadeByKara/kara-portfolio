@@ -120,39 +120,33 @@ function CursorLabel() {
 // ─────────────────────────────────────────────────────────────────────────────
 // NAV — hidden at the top, drops down once you scroll
 // ─────────────────────────────────────────────────────────────────────────────
-function Nav({ isDark, onToggleTheme }) {
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    const onScroll = () => setShow(window.scrollY > window.innerHeight * 0.65);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-  const go = (hash) => (e) => { e.preventDefault(); document.querySelector(hash)?.scrollIntoView({ behavior: "smooth" }); };
-
+function Nav({ page, onNav, isDark, onToggleTheme }) {
+  const links = [["Home", "home"], ["Work", "work"], ["About", "about"], ["Contact", "contact"]];
   return (
     <header style={{
       position: "fixed", top: 0, left: 0, right: 0, height: 56, zIndex: 9000,
       display: "flex", alignItems: "center", justifyContent: "space-between",
       padding: "0 28px", borderBottom: `1px solid ${BORDER}`,
       background: "rgb(var(--bg-rgb) / 0.82)", backdropFilter: "blur(12px)",
-      transform: show ? "translateY(0)" : "translateY(-100%)",
-      transition: "transform .5s cubic-bezier(.16,1,.3,1)",
     }}>
-      <a href="#top" data-label="Home" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-        style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+      <button onClick={() => onNav("home")} data-label="Home"
+        style={{ display: "flex", alignItems: "center", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
         <img src={isDark ? "/images/logo/kara-white-logo.svg" : "/images/logo/kara-black-logo.svg"} alt="KARA" style={{ height: 15, display: "block" }} />
-      </a>
+      </button>
       <nav style={{ display: "flex", alignItems: "center", gap: 26 }}>
-        {[["Work", "#work"], ["About", "#about"], ["Services", "#services"], ["Contact", "#contact"]].map(([l, h]) => (
-          <a key={h} href={h} data-label={`Go to ${l}`} onClick={go(h)}
-            style={{ fontFamily: BODY, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase",
-              color: INK, textDecoration: "none", opacity: 0.7, transition: "opacity .2s" }}
-            onMouseEnter={e => e.currentTarget.style.opacity = "1"}
-            onMouseLeave={e => e.currentTarget.style.opacity = "0.7"}>
-            {l}
-          </a>
-        ))}
+        {links.map(([l, p]) => {
+          const on = page === p;
+          return (
+            <button key={p} onClick={() => onNav(p)} data-label={`Go to ${l}`}
+              style={{ fontFamily: BODY, fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase",
+                color: INK, background: "none", border: "none", cursor: "pointer", padding: "2px 0",
+                opacity: on ? 1 : 0.5, borderBottom: on ? `1px solid ${INK}` : "1px solid transparent", transition: "opacity .2s, border-color .2s" }}
+              onMouseEnter={e => { if (!on) e.currentTarget.style.opacity = "0.85"; }}
+              onMouseLeave={e => { if (!on) e.currentTarget.style.opacity = "0.5"; }}>
+              {l}
+            </button>
+          );
+        })}
         <ThemeDot isDark={isDark} onClick={onToggleTheme} />
       </nav>
     </header>
@@ -187,7 +181,7 @@ function Hero({ ready, isDark }) {
   );
   return (
     <section id="top" style={{
-      height: "100vh", minHeight: 640, background: "transparent", position: "relative",
+      height: "calc(100vh - 56px)", minHeight: 600, background: "transparent", position: "relative",
       display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "100%", gap: 40,
       padding: "0 28px", borderBottom: `1px solid ${BORDER}`,
     }}>
@@ -268,7 +262,7 @@ function WorkSection({ onOpen }) {
         <SectionHead label="(01) Selected Work" heading={`${TOTAL} projects, built to last.`}
           copy="A working archive of brand identities, art direction and digital design, spanning 2023 to 2026. Scroll and the titles stack up top — click any one to reopen it." />
       </div>
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 28px" }}>
+      <div style={{ maxWidth: 1360, margin: "0 auto", padding: "0 28px" }}>
         {PROJECTS.map((p, i) => (
           <ProjectRow key={p.id} project={p} index={i} onOpen={() => onOpen(i)} />
         ))}
@@ -311,25 +305,109 @@ function ProjectRow({ project, index, onOpen }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // CAPABILITIES — interactive flow field (vector lines swirl around the cursor)
 // ─────────────────────────────────────────────────────────────────────────────
-// skills grouped by discipline, with fixed proficiency values (reveal-on-scroll)
-const SKILLS = [
-  { group: "UX & Product Design", items: [["Product Strategy", 90], ["Wireframing & Prototyping", 95], ["Design Systems", 88], ["User Flows", 92]] },
-  { group: "Brand Direction",     items: [["Visual Identity", 96], ["Logo & Marks", 94], ["Art Direction", 90], ["Guidelines", 85]] },
-  { group: "Social Campaign Creatives", items: [["Content Design", 95], ["Paid Ad Creatives", 92], ["Motion Basics", 78], ["Copy Direction", 82]] },
+// tools I work with — draggable chips that collide and bounce
+const TOOLS = [
+  { name: "Figma",        mono: "Fi", bg: "#2C2C2C", fg: "#fff" },
+  { name: "Photoshop",    mono: "Ps", bg: "#001E36", fg: "#31A8FF" },
+  { name: "Illustrator",  mono: "Ai", bg: "#330000", fg: "#FF9A00" },
+  { name: "After Effects",mono: "Ae", bg: "#00005B", fg: "#D6A0FF" },
+  { name: "Blender",      mono: "Bl", bg: "#EA7600", fg: "#fff" },
+  { name: "Cursor",       mono: "Cu", bg: "#111111", fg: "#fff" },
+  { name: "Claude",       mono: "✳",  bg: "#D97757", fg: "#fff" },
+  { name: "GitHub",       mono: "Gh", bg: "#181717", fg: "#fff" },
+  { name: "Vercel",       mono: "▲",  bg: "#000000", fg: "#fff" },
+  { name: "Midjourney",   mono: "Mj", bg: "#1B1B1B", fg: "#fff" },
+  { name: "Notion",       mono: "N",  bg: "#ffffff", fg: "#111" },
+  { name: "Framer",       mono: "Fr", bg: "#0055FF", fg: "#fff" },
 ];
 
-function SkillBar({ name, value, delay, shown }) {
-  const [hov, setHov] = useState(false);
+function ToolsPlayground({ isDark }) {
+  const wrapRef = useRef(null);
+  const lineRef = useRef(null);
+  const chipRefs = useRef([]);
+  const bodies = useRef([]);
+  const R = 40;
+
+  useEffect(() => {
+    const wrap = wrapRef.current, canvas = lineRef.current, ctx = canvas.getContext("2d");
+    let W = wrap.clientWidth, H = wrap.clientHeight, dpr = Math.min(window.devicePixelRatio || 1, 2), raf;
+    const setup = () => {
+      W = wrap.clientWidth; H = wrap.clientHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    setup();
+    bodies.current = TOOLS.map(() => ({
+      x: R + Math.random() * (W - 2 * R), y: R + Math.random() * (H - 2 * R),
+      vx: (Math.random() - 0.5) * 1.4, vy: (Math.random() - 0.5) * 1.4, drag: false,
+    }));
+    const resize = () => setup();
+    window.addEventListener("resize", resize);
+
+    const step = () => {
+      const b = bodies.current;
+      for (const p of b) {
+        if (!p.drag) {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < R) { p.x = R; p.vx = Math.abs(p.vx) * 0.92; }
+          if (p.x > W - R) { p.x = W - R; p.vx = -Math.abs(p.vx) * 0.92; }
+          if (p.y < R) { p.y = R; p.vy = Math.abs(p.vy) * 0.92; }
+          if (p.y > H - R) { p.y = H - R; p.vy = -Math.abs(p.vy) * 0.92; }
+          p.vx *= 0.994; p.vy *= 0.994;
+        }
+      }
+      for (let i = 0; i < b.length; i++) for (let j = i + 1; j < b.length; j++) {
+        const a = b[i], c = b[j]; const dx = c.x - a.x, dy = c.y - a.y; const d = Math.hypot(dx, dy) || 0.001; const min = 2 * R;
+        if (d < min) {
+          const nx = dx / d, ny = dy / d, ov = (min - d) / 2;
+          if (!a.drag) { a.x -= nx * ov; a.y -= ny * ov; }
+          if (!c.drag) { c.x += nx * ov; c.y += ny * ov; }
+          const av = a.vx * nx + a.vy * ny, cv = c.vx * nx + c.vy * ny, diff = cv - av;
+          if (!a.drag) { a.vx += nx * diff; a.vy += ny * diff; }
+          if (!c.drag) { c.vx -= nx * diff; c.vy -= ny * diff; }
+        }
+      }
+      // dashed connectors between nearby chips
+      const inkRGB = isDark ? "240,239,233" : "20,20,15";
+      ctx.clearRect(0, 0, W, H); ctx.setLineDash([2, 5]); ctx.lineWidth = 1;
+      for (let i = 0; i < b.length; i++) for (let j = i + 1; j < b.length; j++) {
+        const dd = Math.hypot(b[j].x - b[i].x, b[j].y - b[i].y);
+        if (dd < 240) { ctx.strokeStyle = `rgba(${inkRGB},${0.18 * (1 - dd / 240)})`; ctx.beginPath(); ctx.moveTo(b[i].x, b[i].y); ctx.lineTo(b[j].x, b[j].y); ctx.stroke(); }
+      }
+      for (let i = 0; i < b.length; i++) { const el = chipRefs.current[i]; if (el) el.style.transform = `translate(${b[i].x}px,${b[i].y}px) translate(-50%,-50%)`; }
+      raf = requestAnimationFrame(step);
+    };
+    step();
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
+  }, [isDark]);
+
+  const onDown = (i) => (e) => {
+    e.preventDefault();
+    const rect = wrapRef.current.getBoundingClientRect();
+    const p = bodies.current[i]; p.drag = true; p.vx = 0; p.vy = 0;
+    let lx = e.clientX, ly = e.clientY;
+    const mv = ev => {
+      p.vx = ev.clientX - lx; p.vy = ev.clientY - ly; lx = ev.clientX; ly = ev.clientY;
+      p.x = Math.max(R, Math.min(rect.width - R, ev.clientX - rect.left));
+      p.y = Math.max(R, Math.min(rect.height - R, ev.clientY - rect.top));
+    };
+    const up = () => { p.drag = false; window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); };
+    window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up);
+  };
+
   return (
-    <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} data-label={`${value}% proficiency`}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-        <span style={{ fontFamily: BODY, fontSize: 13, color: INK }}>{name}</span>
-        <span style={{ fontFamily: BODY, fontSize: 11, color: hov ? INK : MUTED, transition: "color .2s" }}>{value}%</span>
-      </div>
-      <div style={{ height: 3, background: BORDER, position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: shown ? `${value}%` : "0%",
-          background: INK, transition: `width 1.1s cubic-bezier(.16,1,.3,1) ${delay}s` }} />
-      </div>
+    <div ref={wrapRef} style={{ position: "relative", width: "100%", height: "min(70vh, 560px)", touchAction: "none", overflow: "hidden" }}>
+      <canvas ref={lineRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0, pointerEvents: "none" }} />
+      {TOOLS.map((t, i) => (
+        <div key={t.name} ref={el => chipRefs.current[i] = el} onPointerDown={onDown(i)} data-label={t.name}
+          style={{ position: "absolute", left: 0, top: 0, width: 84, display: "flex", flexDirection: "column", alignItems: "center", gap: 9,
+            cursor: "grab", userSelect: "none", willChange: "transform", zIndex: 1 }}>
+          <div style={{ width: 2 * R, height: 2 * R, borderRadius: 18, background: t.bg, display: "flex", alignItems: "center", justifyContent: "center",
+            fontFamily: HEAD, fontWeight: 700, fontSize: 22, color: t.fg, boxShadow: "0 8px 24px rgba(0,0,0,0.16)", border: t.bg === "#ffffff" ? `1px solid ${BORDER}` : "none" }}>
+            {t.mono}
+          </div>
+          <span style={{ fontFamily: BODY, fontSize: 11, color: INK, whiteSpace: "nowrap" }}>{t.name}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -390,34 +468,13 @@ function FlowField({ isDark }) {
   return <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />;
 }
 
-function Capabilities() {
-  const [shown, setShown] = useState(false);
-  const ref = useRef(null);
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setShown(true); obs.disconnect(); } }, { threshold: 0.2 });
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
+function ToolsSection({ isDark }) {
   return (
-    <section id="services" style={{ background: "transparent", padding: "90px 28px 80px", borderTop: `1px solid ${BORDER}` }}>
-      <SectionHead label="(02) What I Do"
-        heading="The skills behind the work."
-        copy="Three disciplines, sharpened over years of client work across product, brand and social." />
-      <div ref={ref} style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "48px 40px" }}>
-        {SKILLS.map((g, gi) => (
-          <div key={g.group}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 28, paddingBottom: 14, borderBottom: `1px solid ${BORDER}` }}>
-              <span style={{ fontFamily: BODY, fontSize: 11, letterSpacing: ".16em", color: MUTED }}>0{gi + 1}</span>
-              <h3 style={{ fontFamily: HEAD, fontWeight: 500, fontSize: "clamp(17px,1.5vw,22px)", letterSpacing: "-.01em", color: INK }}>{g.group}</h3>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-              {g.items.map(([name, val], ii) => (
-                <SkillBar key={name} name={name} value={val} shown={shown} delay={gi * 0.12 + ii * 0.08} />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+    <section id="services" style={{ background: "transparent", padding: "80px 28px 90px", borderTop: `1px solid ${BORDER}` }}>
+      <SectionHead label="Tools I Use"
+        heading="The stack I build with every day."
+        copy="Design, code and AI in one workflow. Grab any tool and toss it around, they bounce off each other." />
+      <ToolsPlayground isDark={isDark} />
     </section>
   );
 }
@@ -462,7 +519,7 @@ function About() {
 // ─────────────────────────────────────────────────────────────────────────────
 // CONTACT / FOOTER — 2 columns + big logo bottom right (always dark panel)
 // ─────────────────────────────────────────────────────────────────────────────
-function ContactFooter() {
+function ContactFooter({ onNav }) {
   const [toast, setToast] = useState(false);
   const copyEmail = () => {
     const email = "hello@madebykara.com";
@@ -476,7 +533,7 @@ function ContactFooter() {
     } catch (e) { /* still confirm */ }
     setToast(true); setTimeout(() => setToast(false), 1800);
   };
-  const NAV = [["Work", "#work"], ["About", "#about"], ["Services", "#services"], ["Contact", "#contact"]];
+  const NAV = [["Home", "home"], ["Work", "work"], ["About", "about"]];
   const socials = [["madebykara.com", "https://madebykara.com"], ["Upwork", "https://upwork.com"], ["Fiverr", "https://fiverr.com"], ["Instagram", "https://instagram.com"], ["LinkedIn", "https://linkedin.com"]];
   const colHead = { fontFamily: BODY, fontSize: 10, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(232,228,222,0.4)", marginBottom: 22 };
 
@@ -490,13 +547,13 @@ function ContactFooter() {
         <div>
           <div style={colHead}>Navigation</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {NAV.map(([l, h]) => (
-              <a key={h} href={h} data-label={`Go to ${l}`}
-                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: 340,
-                  padding: "12px 0", borderBottom: "1px solid rgba(232,228,222,0.1)", textDecoration: "none",
+            {NAV.map(([l, p]) => (
+              <button key={p} onClick={() => onNav(p)} data-label={`Go to ${l}`}
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", maxWidth: 340,
+                  padding: "12px 0", background: "none", border: "none", borderBottom: "1px solid rgba(232,228,222,0.1)", borderRadius: 0, cursor: "pointer", textAlign: "left",
                   fontFamily: HEAD, fontWeight: 500, fontSize: "clamp(20px,2.2vw,28px)", color: PANEL_INK, letterSpacing: "-.01em" }}>
                 {l}<span style={{ fontFamily: BODY, fontSize: 12, color: "rgba(232,228,222,0.4)" }}>→</span>
-              </a>
+              </button>
             ))}
           </div>
         </div>
@@ -541,32 +598,36 @@ function ContactFooter() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SKIP BUTTON — bottom-right; visible while scrolling the work section
+// ROUTING + PAGE SHELLS
 // ─────────────────────────────────────────────────────────────────────────────
-function SkipToContact() {
-  const [show, setShow] = useState(false);
+const PAGES = ["home", "work", "about", "contact"];
+function usePage() {
+  const read = () => { const h = window.location.hash.replace("#", "") || "home"; return PAGES.includes(h) ? h : "home"; };
+  const [page, setPage] = useState(read);
   useEffect(() => {
-    const onScroll = () => {
-      const contact = document.querySelector("#contact");
-      const pastHero = window.scrollY > window.innerHeight * 0.9;
-      const beforeContact = contact ? contact.getBoundingClientRect().top > window.innerHeight * 0.6 : true;
-      setShow(pastHero && beforeContact);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const on = () => setPage(read());
+    window.addEventListener("hashchange", on);
+    return () => window.removeEventListener("hashchange", on);
   }, []);
-  const jump = () => document.querySelector("#contact")?.scrollIntoView({ behavior: "smooth" });
+  const go = (p) => { window.location.hash = p; window.scrollTo(0, 0); };
+  return [page, go];
+}
+
+function HomePage({ ready, isDark }) {
+  return (<><Hero ready={ready} isDark={isDark} /><ToolsSection isDark={isDark} /></>);
+}
+
+function SiteFooter({ onNav }) {
   return (
-    <button onClick={jump} data-label="Jump to contact"
-      style={{ position: "fixed", right: 24, bottom: 24, zIndex: 8000,
-        display: "flex", alignItems: "center", gap: 9, padding: "12px 18px", borderRadius: 100,
-        background: INK, color: "var(--bg)", border: "none", cursor: "pointer",
-        fontFamily: BODY, fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", fontWeight: 500,
-        opacity: show ? 1 : 0, transform: show ? "translateY(0)" : "translateY(16px)", pointerEvents: show ? "auto" : "none",
-        transition: "opacity .4s ease, transform .4s ease", boxShadow: "0 8px 30px rgb(var(--ink-rgb) / 0.18)" }}>
-      Skip to Contact <span style={{ fontSize: 13 }}>↓</span>
-    </button>
+    <footer style={{ padding: "26px 28px", borderTop: `1px solid ${BORDER}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 14, background: "transparent" }}>
+      <span style={{ fontFamily: BODY, fontSize: 10, letterSpacing: ".14em", textTransform: "uppercase", color: MUTED }}>© 2026 Karan Sandhu · Dubai</span>
+      <div style={{ display: "flex", gap: 20 }}>
+        {[["Work", "work"], ["About", "about"], ["Contact", "contact"]].map(([l, p]) => (
+          <button key={p} onClick={() => onNav(p)} data-label={`Go to ${l}`}
+            style={{ fontFamily: BODY, fontSize: 10, letterSpacing: ".14em", textTransform: "uppercase", color: MUTED, background: "none", border: "none", cursor: "pointer" }}>{l}</button>
+        ))}
+      </div>
+    </footer>
   );
 }
 
@@ -575,22 +636,27 @@ function SkipToContact() {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function App() {
   const [ready, setReady] = useState(false);
-  const [projectPage, setProjectPage] = useState(null);
   const [isDark, setIsDark] = useState(() => {
     try { return localStorage.getItem("kara-theme") === "dark"; } catch { return false; }
   });
+  const [page, go] = usePage();
+  const [projectPage, setProjectPage] = useState(null);
 
   useEffect(() => { const t = setTimeout(() => setReady(true), 200); return () => clearTimeout(t); }, []);
   useEffect(() => {
     document.body.style.background = isDark ? "#100f0e" : "#f3f2ee";
     try { localStorage.setItem("kara-theme", isDark ? "dark" : "light"); } catch (e) { /* ignore */ }
   }, [isDark]);
+  useEffect(() => { setProjectPage(null); }, [page]);
 
   const openProject  = useCallback(i => { setProjectPage(i); window.scrollTo(0, 0); }, []);
-  const closeProject = useCallback(() => setProjectPage(null), []);
+  const closeProject = useCallback(() => { setProjectPage(null); window.scrollTo(0, 0); }, []);
   const prevProject  = useCallback(() => setProjectPage(i => (i - 1 + TOTAL) % TOTAL), []);
   const nextProject  = useCallback(() => setProjectPage(i => (i + 1) % TOTAL), []);
   const toggleTheme  = useCallback(() => setIsDark(v => !v), []);
+  const navigate     = useCallback((p) => { setProjectPage(null); go(p); }, [go]);
+
+  const detail = page === "work" && projectPage !== null;
 
   return (
     <div className={isDark ? "theme-dark" : "theme-light"} style={{ background: BG, color: INK, minHeight: "100vh", transition: "background-color .4s ease, color .4s ease" }}>
@@ -608,31 +674,32 @@ export default function App() {
           70%  { box-shadow: 0 0 0 8px rgba(58,125,68,0); }
           100% { box-shadow: 0 0 0 0 rgba(58,125,68,0); }
         }
+        @keyframes pageIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
       `}</style>
 
       <CursorLabel />
+      <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 0, opacity: 0.3, pointerEvents: "none" }}>
+        <FlowField isDark={isDark} />
+      </div>
 
-      {projectPage !== null ? (
-        <ProjectPage project={PROJECTS[projectPage]} onBack={closeProject} onPrev={prevProject} onNext={nextProject} totalProjects={TOTAL} isDark={isDark} />
-      ) : (
-        <>
-          {/* ambient interactive field behind the whole page */}
-          <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 0, opacity: 0.3, pointerEvents: "none" }}>
-            <FlowField isDark={isDark} />
-          </div>
-          <div style={{ position: "relative", zIndex: 1 }}>
-            <Nav isDark={isDark} onToggleTheme={toggleTheme} />
-            <main>
-              <Hero ready={ready} isDark={isDark} />
-              <WorkSection onOpen={openProject} />
-              <Capabilities />
-              <About />
-              <ContactFooter />
+      <div style={{ position: "relative", zIndex: 1 }}>
+        {detail ? (
+          <ProjectPage project={PROJECTS[projectPage]} onBack={closeProject} onPrev={prevProject} onNext={nextProject} totalProjects={TOTAL} isDark={isDark} />
+        ) : (
+          <>
+            <Nav page={page} onNav={navigate} isDark={isDark} onToggleTheme={toggleTheme} />
+            <main style={{ paddingTop: 56, minHeight: "calc(100vh - 130px)" }}>
+              <div key={page} style={{ animation: "pageIn .55s cubic-bezier(.16,1,.3,1)" }}>
+                {page === "work" ? <WorkSection onOpen={openProject} />
+                  : page === "about" ? <About />
+                  : page === "contact" ? <ContactFooter onNav={navigate} />
+                  : <HomePage ready={ready} isDark={isDark} />}
+              </div>
             </main>
-            <SkipToContact />
-          </div>
-        </>
-      )}
+            {page !== "contact" && <SiteFooter onNav={navigate} />}
+          </>
+        )}
+      </div>
     </div>
   );
 }

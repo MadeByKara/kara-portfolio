@@ -250,6 +250,12 @@ export const PROJECT_IMAGES = {
   ],
 };
 
+// company / client per project
+const CLIENT = {
+  "01": "Multiple Brands", "02": "Parallels", "03": "CoinCooker", "04": "Brand Craft", "05": "KARA (Personal)",
+  "06": "Greenstone", "07": "Stygian Crypt", "08": "Analog The Room", "09": "Maison Etherique", "10": "Tabby (Concept)",
+};
+
 // ── COMPONENT ─────────────────────────────────────────────────────────────────
 export default function ProjectPage({ project, onBack, onNext, onPrev, totalProjects }) {
   const images = PROJECT_IMAGES[project.id] || [project.img];
@@ -258,12 +264,11 @@ export default function ProjectPage({ project, onBack, onNext, onPrev, totalProj
   }, [project.id]);
 
   const lbl = { fontFamily: F_SANS, fontWeight: 500, fontSize: 10, letterSpacing: ".18em", textTransform: "uppercase" };
-
-  const meta = [["Year", project.year], ["Category", project.cat], ["Views", `${images.length} images`]];
+  const meta = [["Client", CLIENT[project.id] || project.title], ["Year", project.year], ["Discipline", project.cat], ["Frames", `${images.length}`]];
 
   return (
     <div style={{ background: BG, minHeight: "100vh", color: INK }}>
-      {/* top bar — matches the home nav */}
+      {/* top bar */}
       <div style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 500, height: 56,
         display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px",
@@ -281,44 +286,41 @@ export default function ProjectPage({ project, onBack, onNext, onPrev, totalProj
       </div>
 
       <main style={{ paddingTop: 56 }}>
-        {/* editorial header (2 columns) */}
-        <div style={{ padding: "72px 28px 44px", borderBottom: `1px solid ${BORDER}` }}>
-          <div style={{ fontFamily: F_SANS, fontSize: 11, letterSpacing: ".2em", textTransform: "uppercase", color: MUTED, marginBottom: 26 }}>
-            {project.code} · Project {project.id} of {String(totalProjects).padStart(2, "0")}
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, alignItems: "end" }}>
-            <h1 style={{ fontFamily: F_SERIF, fontWeight: 600, fontSize: "clamp(34px,5vw,76px)", lineHeight: 1.0, letterSpacing: "-.03em", color: INK }}>
+        <div style={{ display: "grid", gridTemplateColumns: "clamp(280px, 26vw, 360px) 1fr" }}>
+          {/* LEFT — sticky info rail */}
+          <aside style={{ position: "sticky", top: 56, alignSelf: "start", borderRight: `1px solid ${BORDER}`,
+            padding: "56px 28px 40px", minHeight: "calc(100vh - 56px)" }}>
+            <div style={{ ...lbl, fontSize: 10, color: MUTED, marginBottom: 20 }}>{project.code}</div>
+            <h1 style={{ fontFamily: F_SERIF, fontWeight: 600, fontSize: "clamp(28px,2.6vw,44px)", lineHeight: 1.03, letterSpacing: "-.02em", color: INK, marginBottom: 22 }}>
               {project.title}
             </h1>
-            <div>
-              <p style={{ fontFamily: F_SANS, fontSize: 14, lineHeight: 1.75, color: "rgb(var(--ink-rgb) / 0.62)", marginBottom: 26, maxWidth: 460 }}>
-                {project.desc}
-              </p>
-              <div style={{ display: "flex", gap: 34, flexWrap: "wrap", alignItems: "flex-end" }}>
-                {meta.map(([k, v]) => (
-                  <div key={k}>
-                    <div style={{ ...lbl, fontSize: 9, color: MUTED, marginBottom: 6 }}>{k}</div>
-                    <div style={{ fontFamily: F_SANS, fontSize: 13, color: INK }}>{v}</div>
-                  </div>
-                ))}
-                <a href={project.url} target="_blank" rel="noreferrer" data-label="Open live site"
-                  style={{ ...lbl, fontSize: 10, color: INK, textDecoration: "none", borderBottom: `1px solid ${INK}`, paddingBottom: 2 }}>
-                  View on Site ↗
-                </a>
-              </div>
+            <p style={{ fontFamily: F_SANS, fontSize: 13.5, lineHeight: 1.8, color: "rgb(var(--ink-rgb) / 0.62)", marginBottom: 30 }}>
+              {project.desc}
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "18px 12px", marginBottom: 30, borderTop: `1px solid ${BORDER}`, paddingTop: 24 }}>
+              {meta.map(([k, v]) => (
+                <div key={k}>
+                  <div style={{ ...lbl, fontSize: 9, color: MUTED, marginBottom: 5 }}>{k}</div>
+                  <div style={{ fontFamily: F_SANS, fontSize: 13, color: INK }}>{v}</div>
+                </div>
+              ))}
             </div>
-          </div>
-        </div>
+            <a href={project.url} target="_blank" rel="noreferrer" data-label="Open live site"
+              style={{ ...lbl, fontSize: 10, color: INK, textDecoration: "none", borderBottom: `1px solid ${INK}`, paddingBottom: 2 }}>
+              View on Site ↗
+            </a>
+          </aside>
 
-        {/* masonry gallery */}
-        <div style={{ padding: "28px 28px 40px", columns: 2, columnGap: 20 }}>
-          {images.map((src, i) => (
-            <ProjectImage key={i} src={src} idx={i} />
-          ))}
+          {/* RIGHT — images, constrained + breathing space */}
+          <div style={{ padding: "48px clamp(24px,4vw,64px)", display: "flex", flexDirection: "column", gap: "clamp(28px,3vw,44px)", alignItems: "center" }}>
+            {images.map((src, i) => (
+              <ProjectImage key={i} src={src} idx={i} />
+            ))}
+          </div>
         </div>
 
         {/* next project CTA */}
-        <div style={{ borderTop: `1px solid ${BORDER}`, padding: "72px 28px 96px",
+        <div style={{ borderTop: `1px solid ${BORDER}`, padding: "64px 28px 88px",
           display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 24 }}>
           <div>
             <div style={{ ...lbl, fontSize: 10, color: MUTED, marginBottom: 14 }}>Next Project</div>
@@ -360,19 +362,20 @@ function ProjectImage({ src, idx }) {
     <div
       ref={ref}
       style={{
-        breakInside: "avoid",
-        marginBottom: 16,
+        width: "100%",
+        maxWidth: 880,
         overflow: "hidden",
+        borderRadius: 4,
         opacity: vis ? 1 : 0,
-        transform: vis ? "translateY(0)" : "translateY(10px)",
-        transition: `opacity .7s ease ${Math.min(idx * 0.04, 0.4)}s, transform .7s ease ${Math.min(idx * 0.04, 0.4)}s`,
+        transform: vis ? "translateY(0)" : "translateY(14px)",
+        transition: "opacity .7s ease, transform .7s cubic-bezier(.16,1,.3,1)",
       }}
     >
       <img
         src={src}
         alt={`View ${idx + 1}`}
         style={{ width: "100%", height: "auto", display: "block" }}
-        loading={idx < 4 ? "eager" : "lazy"}
+        loading={idx < 3 ? "eager" : "lazy"}
       />
     </div>
   );
