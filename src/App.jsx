@@ -253,86 +253,66 @@ function SectionHead({ label, heading, copy }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // WORK — folder stack
 // ─────────────────────────────────────────────────────────────────────────────
-// horizontal-scroll work section: vertical scroll pins the section and pans the track sideways
+// horizontal strip: wheeling over it pans sideways, but releases at the ends so the
+// page keeps scrolling down; scrolling anywhere off the strip continues down normally.
 function WorkSection({ onOpen }) {
-  const secRef = useRef(null);
-  const trackRef = useRef(null);
-  const [secH, setSecH] = useState(0);
-
+  const scrollerRef = useRef(null);
   useEffect(() => {
-    const sec = secRef.current, track = trackRef.current;
-    const NAV = 56;
-    const compute = () => {
-      const vw = window.innerWidth;
-      const scrollDist = Math.max(0, track.scrollWidth - vw);
-      setSecH(scrollDist + (window.innerHeight - NAV));
+    const el = scrollerRef.current;
+    const onWheel = (e) => {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return; // trackpad horizontal → native
+      const max = el.scrollWidth - el.clientWidth;
+      if (max <= 0) return;
+      const atStart = el.scrollLeft <= 0;
+      const atEnd = el.scrollLeft >= max - 1;
+      // let the page scroll vertically once we hit either end
+      if ((e.deltaY > 0 && atEnd) || (e.deltaY < 0 && atStart)) return;
+      e.preventDefault();
+      el.scrollLeft += e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
     };
-    let raf;
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const vw = window.innerWidth;
-        const scrollDist = Math.max(0, track.scrollWidth - vw);
-        const rect = sec.getBoundingClientRect();
-        const p = Math.max(0, Math.min(1, (NAV - rect.top) / (scrollDist || 1)));
-        track.style.transform = `translate3d(${-p * scrollDist}px,0,0)`;
-      });
-    };
-    compute();
-    onScroll();
-    window.addEventListener("resize", compute);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", compute); window.removeEventListener("scroll", onScroll); };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
   }, []);
 
   return (
-    <section id="work" ref={secRef} style={{ position: "relative", height: secH ? `${secH}px` : "100vh", background: "transparent" }}>
-      <div style={{ position: "sticky", top: 56, height: "calc(100vh - 56px)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-        {/* header row */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 28px", borderBottom: `1px solid ${BORDER}` }}>
-          <span style={{ fontFamily: BODY, fontSize: 11, letterSpacing: ".22em", textTransform: "uppercase", color: INK }}>(01) Selected Work</span>
-          <span style={{ fontFamily: BODY, fontSize: 11, letterSpacing: ".22em", textTransform: "uppercase", color: MUTED }}>{TOTAL} Projects · scroll to pan →</span>
-        </div>
-        {/* horizontal track */}
-        <div style={{ flex: 1, display: "flex", alignItems: "center", overflow: "hidden" }}>
-          <div ref={trackRef} style={{ display: "flex", alignItems: "center", gap: "clamp(20px,3vw,52px)", padding: "0 clamp(28px,7vw,140px)", willChange: "transform" }}>
-            {/* intro panel */}
-            <div style={{ flexShrink: 0, width: "clamp(260px,30vw,440px)" }}>
-              <h2 style={{ fontFamily: HEAD, fontWeight: 600, fontSize: "clamp(30px,3.4vw,56px)", lineHeight: 1.03, letterSpacing: "-.03em", color: INK, marginBottom: 20 }}>
-                Selected work, {String(TOTAL).padStart(2, "0")} projects.
-              </h2>
-              <p style={{ fontFamily: BODY, fontSize: 14, lineHeight: 1.75, color: ink(0.6), maxWidth: 380 }}>
-                Brand identities, art direction and digital design, spanning 2023 to 2026. Scroll to move sideways, click any project to open it.
-              </p>
-            </div>
-            {PROJECTS.map((p, i) => (
-              <WorkPanel key={p.id} project={p} index={i} onOpen={() => onOpen(i)} />
-            ))}
-          </div>
-        </div>
+    <section id="work" style={{ padding: "80px 0 56px", background: "transparent" }}>
+      <div style={{ padding: "0 28px" }}>
+        <SectionHead label="(01) Selected Work" heading={`${TOTAL} projects, built to last.`}
+          copy="Scroll across to move through the work, or keep scrolling down to skip ahead. Click any project to open it." />
+      </div>
+      <div ref={scrollerRef}
+        style={{ display: "flex", gap: "clamp(18px,2.4vw,40px)", overflowX: "auto", padding: "0 28px 8px",
+          scrollSnapType: "x proximity", WebkitOverflowScrolling: "touch" }}>
+        {PROJECTS.map((p, i) => (
+          <WorkPanel key={p.id} project={p} onOpen={() => onOpen(i)} />
+        ))}
+      </div>
+      <div style={{ padding: "20px 28px 0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+        <span style={{ fontFamily: BODY, fontSize: 10, letterSpacing: ".18em", textTransform: "uppercase", color: MUTED }}>← Scroll across the work</span>
+        <span style={{ fontFamily: BODY, fontSize: 10, letterSpacing: ".18em", textTransform: "uppercase", color: MUTED }}>Keep scrolling to continue ↓</span>
       </div>
     </section>
   );
 }
 
-function WorkPanel({ project, index, onOpen }) {
+function WorkPanel({ project, onOpen }) {
   const [hov, setHov] = useState(false);
   return (
     <div onClick={onOpen} data-label={`View · ${project.title}`}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ flexShrink: 0, width: "clamp(300px,38vw,520px)", cursor: "pointer" }}>
-      <div style={{ position: "relative", width: "100%", aspectRatio: "4 / 5", overflow: "hidden", borderRadius: 4, background: project.color }}>
+      style={{ flexShrink: 0, width: "clamp(320px,44vw,600px)", cursor: "pointer", scrollSnapAlign: "start" }}>
+      <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", overflow: "hidden", borderRadius: 4, background: project.color }}>
         <img src={project.img} alt={project.title} loading="lazy"
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block",
             transform: hov ? "scale(1.04)" : "scale(1)", transition: "transform .8s cubic-bezier(.16,1,.3,1)" }} />
-        <div style={{ position: "absolute", top: 16, left: 16, fontFamily: HEAD, fontWeight: 700, fontSize: 40, color: "rgba(255,255,255,.85)", lineHeight: 1, textShadow: "0 2px 20px rgba(0,0,0,.25)" }}>{project.id}</div>
-        <div style={{ position: "absolute", top: 18, right: 18, fontFamily: BODY, fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: "#fff",
+        <div style={{ position: "absolute", top: 14, left: 16, fontFamily: HEAD, fontWeight: 700, fontSize: 34, color: "rgba(255,255,255,.85)", lineHeight: 1, textShadow: "0 2px 20px rgba(0,0,0,.25)" }}>{project.id}</div>
+        <div style={{ position: "absolute", top: 16, right: 16, fontFamily: BODY, fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: "#fff",
           border: "1px solid rgba(255,255,255,.5)", padding: "6px 12px", borderRadius: 100, opacity: hov ? 1 : 0, transition: "opacity .25s" }}>Open ↗</div>
       </div>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16, marginTop: 16 }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16, marginTop: 14 }}>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontFamily: BODY, fontSize: 10, letterSpacing: ".14em", color: MUTED, marginBottom: 4 }}>{project.code}</div>
-          <div style={{ fontFamily: HEAD, fontWeight: 500, fontSize: "clamp(18px,1.6vw,24px)", color: INK, letterSpacing: "-.01em",
+          <div style={{ fontFamily: HEAD, fontWeight: 500, fontSize: "clamp(17px,1.5vw,22px)", color: INK, letterSpacing: "-.01em",
             borderBottom: hov ? `1px solid ${INK}` : "1px solid transparent", transition: "border-color .2s", display: "inline-block" }}>{project.title}</div>
         </div>
         <div style={{ textAlign: "right", flexShrink: 0 }}>
