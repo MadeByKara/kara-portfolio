@@ -253,43 +253,73 @@ function SectionHead({ label, heading, copy }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // WORK — folder stack
 // ─────────────────────────────────────────────────────────────────────────────
-// horizontal strip: wheeling over it pans sideways, but releases at the ends so the
-// page keeps scrolling down; scrolling anywhere off the strip continues down normally.
+// infinite looping horizontal carousel: drag / scroll across it; a down arrow leaves the section
 function WorkSection({ onOpen }) {
   const scrollerRef = useRef(null);
+  const setW = useRef(0);
+  const dragging = useRef(false);
+  const hovering = useRef(false);
+  const moved = useRef(false);
+  const acc = useRef(0);
+  const loop = [...PROJECTS, ...PROJECTS, ...PROJECTS];
+
   useEffect(() => {
     const el = scrollerRef.current;
-    const onWheel = (e) => {
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return; // trackpad horizontal → native
-      const max = el.scrollWidth - el.clientWidth;
-      if (max <= 0) return;
-      const atStart = el.scrollLeft <= 0;
-      const atEnd = el.scrollLeft >= max - 1;
-      // let the page scroll vertically once we hit either end
-      if ((e.deltaY > 0 && atEnd) || (e.deltaY < 0 && atStart)) return;
-      e.preventDefault();
-      el.scrollLeft += e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+    const measure = () => { setW.current = el.scrollWidth / 3; if (el.scrollLeft < setW.current * 0.5) el.scrollLeft = setW.current; };
+    measure();
+    const imgs = el.querySelectorAll("img");
+    imgs.forEach(im => im.complete || im.addEventListener("load", measure));
+    window.addEventListener("resize", measure);
+    const normalize = () => { const w = setW.current; if (!w) return; if (el.scrollLeft >= w * 2) el.scrollLeft -= w; else if (el.scrollLeft < w) el.scrollLeft += w; };
+    el.addEventListener("scroll", normalize, { passive: true });
+    let raf;
+    const tick = () => {
+      if (!dragging.current && !hovering.current) {
+        acc.current += 0.5;
+        const whole = Math.floor(acc.current);
+        if (whole) { el.scrollLeft += whole; acc.current -= whole; }
+      }
+      raf = requestAnimationFrame(tick);
     };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
+    raf = requestAnimationFrame(tick);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", measure); el.removeEventListener("scroll", normalize); imgs.forEach(im => im.removeEventListener("load", measure)); };
   }, []);
 
+  const onDown = (e) => {
+    const el = scrollerRef.current;
+    dragging.current = true; moved.current = false;
+    let lastX = e.clientX; const startX = e.clientX;
+    el.style.cursor = "grabbing";
+    const mv = (ev) => { el.scrollLeft -= (ev.clientX - lastX); lastX = ev.clientX; if (Math.abs(ev.clientX - startX) > 6) moved.current = true; };
+    const up = () => { dragging.current = false; el.style.cursor = "grab"; window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); };
+    window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up);
+  };
+
+  const leaveSection = () => {
+    const sec = document.getElementById("work");
+    const next = sec && sec.nextElementSibling;
+    (next || sec).scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
-    <section id="work" style={{ padding: "80px 0 56px", background: "transparent" }}>
+    <section id="work" style={{ padding: "80px 0 40px", background: "transparent" }}>
       <div style={{ padding: "0 28px" }}>
         <SectionHead label="(01) Selected Work" heading={`${TOTAL} projects, built to last.`}
-          copy="Scroll across to move through the work, or keep scrolling down to skip ahead. Click any project to open it." />
+          copy="Scroll or drag across the work — it loops. Click any project to open it, or tap the arrow to move on." />
       </div>
-      <div ref={scrollerRef}
-        style={{ display: "flex", gap: "clamp(18px,2.4vw,40px)", overflowX: "auto", padding: "0 28px 8px",
-          scrollSnapType: "x proximity", WebkitOverflowScrolling: "touch" }}>
-        {PROJECTS.map((p, i) => (
-          <WorkPanel key={p.id} project={p} onOpen={() => onOpen(i)} />
-        ))}
-      </div>
-      <div style={{ padding: "20px 28px 0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-        <span style={{ fontFamily: BODY, fontSize: 10, letterSpacing: ".18em", textTransform: "uppercase", color: MUTED }}>← Scroll across the work</span>
-        <span style={{ fontFamily: BODY, fontSize: 10, letterSpacing: ".18em", textTransform: "uppercase", color: MUTED }}>Keep scrolling to continue ↓</span>
+      <div style={{ position: "relative" }}>
+        <div ref={scrollerRef} onPointerDown={onDown}
+          onMouseEnter={() => { hovering.current = true; }} onMouseLeave={() => { hovering.current = false; }}
+          style={{ display: "flex", gap: "clamp(18px,2.4vw,40px)", overflowX: "auto", padding: "0 28px 8px",
+            cursor: "grab", scrollbarWidth: "none", msOverflowStyle: "none", userSelect: "none", scrollBehavior: "auto" }}>
+          {loop.map((p, i) => (
+            <WorkPanel key={i} project={p} onOpen={() => { if (!moved.current) onOpen(PROJECTS.indexOf(p)); }} />
+          ))}
+        </div>
+        <button onClick={leaveSection} data-label="Skip to next section"
+          style={{ position: "absolute", right: 22, top: "50%", transform: "translateY(-50%)", zIndex: 5,
+            width: 46, height: 46, borderRadius: "50%", border: `1px solid ${BORDER}`, background: BG, color: INK,
+            cursor: "pointer", fontSize: 17, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 24px rgb(var(--ink-rgb) / 0.14)" }}>↓</button>
       </div>
     </section>
   );
