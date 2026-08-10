@@ -253,46 +253,47 @@ function SectionHead({ label, heading, copy }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // WORK — folder stack
 // ─────────────────────────────────────────────────────────────────────────────
-// infinite looping horizontal carousel: drag / scroll across it; a down arrow leaves the section
+// click-and-drag horizontal strip (with momentum). vertical page scroll is untouched,
+// so you can just keep scrolling down to leave — or use the down arrow on the right.
 function WorkSection({ onOpen }) {
   const scrollerRef = useRef(null);
-  const setW = useRef(0);
-  const dragging = useRef(false);
-  const hovering = useRef(false);
   const moved = useRef(false);
-  const acc = useRef(0);
-  const loop = [...PROJECTS, ...PROJECTS, ...PROJECTS];
-
-  useEffect(() => {
-    const el = scrollerRef.current;
-    const measure = () => { setW.current = el.scrollWidth / 3; if (el.scrollLeft < setW.current * 0.5) el.scrollLeft = setW.current; };
-    measure();
-    const imgs = el.querySelectorAll("img");
-    imgs.forEach(im => im.complete || im.addEventListener("load", measure));
-    window.addEventListener("resize", measure);
-    const normalize = () => { const w = setW.current; if (!w) return; if (el.scrollLeft >= w * 2) el.scrollLeft -= w; else if (el.scrollLeft < w) el.scrollLeft += w; };
-    el.addEventListener("scroll", normalize, { passive: true });
-    let raf;
-    const tick = () => {
-      if (!dragging.current && !hovering.current) {
-        acc.current += 0.5;
-        const whole = Math.floor(acc.current);
-        if (whole) { el.scrollLeft += whole; acc.current -= whole; }
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", measure); el.removeEventListener("scroll", normalize); imgs.forEach(im => im.removeEventListener("load", measure)); };
-  }, []);
+  const momRaf = useRef(0);
 
   const onDown = (e) => {
+    if (e.button !== undefined && e.button !== 0) return;
     const el = scrollerRef.current;
-    dragging.current = true; moved.current = false;
+    cancelAnimationFrame(momRaf.current);
+    moved.current = false;
     let lastX = e.clientX; const startX = e.clientX;
+    let vx = 0, lastT = performance.now();
     el.style.cursor = "grabbing";
-    const mv = (ev) => { el.scrollLeft -= (ev.clientX - lastX); lastX = ev.clientX; if (Math.abs(ev.clientX - startX) > 6) moved.current = true; };
-    const up = () => { dragging.current = false; el.style.cursor = "grab"; window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); };
-    window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up);
+    const mv = (ev) => {
+      const now = performance.now();
+      const dx = ev.clientX - lastX;
+      el.scrollLeft -= dx;
+      vx = dx; lastX = ev.clientX; lastT = now;
+      if (Math.abs(ev.clientX - startX) > 5) moved.current = true;
+    };
+    const up = () => {
+      el.style.cursor = "grab";
+      window.removeEventListener("pointermove", mv);
+      window.removeEventListener("pointerup", up);
+      let v = vx;
+      const decay = () => {
+        if (Math.abs(v) < 0.4) return;
+        el.scrollLeft -= v; v *= 0.9;
+        momRaf.current = requestAnimationFrame(decay);
+      };
+      if (moved.current) momRaf.current = requestAnimationFrame(decay);
+    };
+    window.addEventListener("pointermove", mv);
+    window.addEventListener("pointerup", up);
+  };
+
+  const nudge = (dir) => {
+    const el = scrollerRef.current;
+    el.scrollBy({ left: dir * Math.min(el.clientWidth * 0.8, 600), behavior: "smooth" });
   };
 
   const leaveSection = () => {
@@ -303,17 +304,21 @@ function WorkSection({ onOpen }) {
 
   return (
     <section id="work" style={{ padding: "80px 0 40px", background: "transparent" }}>
-      <div style={{ padding: "0 28px" }}>
+      <div style={{ padding: "0 28px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 20, flexWrap: "wrap" }}>
         <SectionHead label="(01) Selected Work" heading={`${TOTAL} projects, built to last.`}
-          copy="Scroll or drag across the work — it loops. Click any project to open it, or tap the arrow to move on." />
+          copy="Click and drag across the work, or use the arrows. Click a project to open it." />
+        <div style={{ display: "flex", gap: 10, paddingBottom: 4 }}>
+          <button onClick={() => nudge(-1)} data-label="Scroll left" style={arrowBtn}>←</button>
+          <button onClick={() => nudge(1)} data-label="Scroll right" style={arrowBtn}>→</button>
+        </div>
       </div>
       <div style={{ position: "relative" }}>
         <div ref={scrollerRef} onPointerDown={onDown}
-          onMouseEnter={() => { hovering.current = true; }} onMouseLeave={() => { hovering.current = false; }}
           style={{ display: "flex", gap: "clamp(18px,2.4vw,40px)", overflowX: "auto", padding: "0 28px 8px",
-            cursor: "grab", scrollbarWidth: "none", msOverflowStyle: "none", userSelect: "none", scrollBehavior: "auto" }}>
-          {loop.map((p, i) => (
-            <WorkPanel key={i} project={p} onOpen={() => { if (!moved.current) onOpen(PROJECTS.indexOf(p)); }} />
+            cursor: "grab", scrollbarWidth: "none", msOverflowStyle: "none", userSelect: "none",
+            WebkitOverflowScrolling: "touch" }}>
+          {PROJECTS.map((p, i) => (
+            <WorkPanel key={p.id} project={p} onOpen={() => { if (!moved.current) onOpen(i); }} />
           ))}
         </div>
         <button onClick={leaveSection} data-label="Skip to next section"
@@ -325,15 +330,21 @@ function WorkSection({ onOpen }) {
   );
 }
 
+const arrowBtn = {
+  width: 40, height: 40, borderRadius: "50%", border: `1px solid ${BORDER}`, background: "transparent",
+  color: INK, cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center",
+};
+
 function WorkPanel({ project, onOpen }) {
   const [hov, setHov] = useState(false);
   return (
     <div onClick={onOpen} data-label={`View · ${project.title}`}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ flexShrink: 0, width: "clamp(320px,44vw,600px)", cursor: "pointer", scrollSnapAlign: "start" }}>
+      style={{ flexShrink: 0, width: "clamp(320px,44vw,600px)", cursor: "pointer" }}>
       <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", overflow: "hidden", borderRadius: 4, background: project.color }}>
-        <img src={project.img} alt={project.title} loading="lazy"
+        <img src={project.img} alt={project.title} loading="lazy" draggable={false}
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block",
+            pointerEvents: "none", WebkitUserDrag: "none",
             transform: hov ? "scale(1.04)" : "scale(1)", transition: "transform .8s cubic-bezier(.16,1,.3,1)" }} />
         <div style={{ position: "absolute", top: 14, left: 16, fontFamily: HEAD, fontWeight: 700, fontSize: 34, color: "rgba(255,255,255,.85)", lineHeight: 1, textShadow: "0 2px 20px rgba(0,0,0,.25)" }}>{project.id}</div>
         <div style={{ position: "absolute", top: 16, right: 16, fontFamily: BODY, fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: "#fff",
